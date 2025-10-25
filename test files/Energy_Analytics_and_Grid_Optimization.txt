@@ -1,0 +1,11 @@
+Title: Energy Analytics and Grid Optimization
+
+Energy analytics platforms are transforming how grid operators and traders make decisions. 
+By aggregating data from solar, wind, and market sources, these systems provide insights 
+into locational marginal pricing (LMP), congestion, and renewable curtailment. 
+Machine learning models identify patterns in demand, forecast errors, and price spikes, 
+helping utilities optimize dispatch and trading strategies.
+
+The integration of renewable energy forecasting—especially solar and wind—into analytics dashboards 
+enables proactive grid management. Data-driven decision-making, powered by AI and predictive analytics, 
+is becoming the cornerstone of energy market optimization.

@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enhanced Document Knowledge Graph Analyzer</title>
+    <script src="config.js"></script>
+    <script src="theme-storage-system.js"></script>
+    <script src="semantic-analyzer.js"></script>
+    <script src="enhanced-prompts.js"></script>
+    <script src="document-connection-analyzer.js"></script>
+
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #111827;
+        color: white;
+        overflow: hidden;
+      }
+
+      .container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        background: #1f2937;
+        border-bottom: 1px solid #374151;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .header-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .header-title h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      .badge {
+        background: #059669;
+        color: white;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .main-content {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        width: 350px;
+        background: #1f2937;
+        border-right: 1px solid #374151;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .sidebar-section {
+        padding: 1rem;
+        border-bottom: 1px solid #374151;
+      }
+
+      .sidebar-section h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #d1d5db;
+      }
+
+      .file-upload {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .upload-button {
+        background: #374151;
+        border: 2px dashed #6b7280;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #9ca3af;
+      }
+
+      .upload-button:hover {
+        background: #4b5563;
+        border-color: #9ca3af;
+      }
+
+      .process-button {
+        background: #059669;
+        color: white;
+        border: none;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      .process-button:hover:not(:disabled) {
+        background: #047857;
+      }
+
+      .process-button:disabled {
+        background: #374151;
+        cursor: not-allowed;
+      }
+
+      .analysis-panel {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        max-height: none;
+      }
+
+      .analysis-section {
+        margin-bottom: 1.5rem;
+        background: #374151;
+        padding: 1rem;
+        border-radius: 0.5rem;
+      }
+
+      .analysis-section h4 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #f3f4f6;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .stat-item {
+        background: #4b5563;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #60a5fa;
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
+        color: #9ca3af;
+      }
+
+      .theme-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #4b5563;
+        border-radius: 0.25rem;
+      }
+
+      .theme-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid #4b5563;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+      }
+
+      .theme-item:last-child {
+        border-bottom: none;
+      }
+
+      .theme-label {
+        flex: 1;
+        font-size: 0.875rem;
+      }
+
+      .theme-badge {
+        background: #1f2937;
+        color: #9ca3af;
+        padding: 0.125rem 0.375rem;
+        border-radius: 0.125rem;
+        font-size: 0.75rem;
+      }
+
+      .graph-container {
+        flex: 1;
+        position: relative;
+        background: #0a0a0a;
+      }
+
+      .graph-controls {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: rgba(31, 41, 55, 0.9);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        backdrop-filter: blur(8px);
+        display: flex;
+        gap: 0.5rem;
+        z-index: 10;
+      }
+
+      .control-button {
+        background: #374151;
+        border: none;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.2s;
+      }
+
+      .control-button:hover {
+        background: #4b5563;
+      }
+
+      .control-button:active {
+        background: #1f2937;
+      }
+
+      .graph-overlay {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(31, 41, 55, 0.9);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        backdrop-filter: blur(8px);
+        max-width: 300px;
+        z-index: 10;
+      }
+
+      .node-details h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .node-details p {
+        font-size: 0.875rem;
+        color: #d1d5db;
+        margin-bottom: 0.25rem;
+      }
+
+      .hover-tooltip {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(17, 24, 39, 0.95);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #374151;
+        backdrop-filter: blur(8px);
+        pointer-events: none;
+        z-index: 5;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      .progress-bar {
+        background: #374151;
+        height: 4px;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+      }
+
+      .progress-fill {
+        background: #059669;
+        height: 100%;
+        transition: width 0.3s ease;
+      }
+
+      .loading-state {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #9ca3af;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #374151;
+        border-top: 2px solid #059669;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .message {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      .message.success {
+        background: rgba(5, 150, 105, 0.2);
+        border: 1px solid #059669;
+        color: #10b981;
+      }
+
+      .message.error {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid #ef4444;
+        color: #f87171;
+      }
+
+      .message.info {
+        background: rgba(59, 130, 246, 0.2);
+        border: 1px solid #3b82f6;
+        color: #60a5fa;
+      }
+
+      .chat-section {
+        background: #374151;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .chat-input {
+        width: 100%;
+        background: #1f2937;
+        border: 1px solid #4b5563;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+      }
+
+      .chat-input:focus {
+        outline: none;
+        border-color: #059669;
+      }
+
+      .search-results {
+        max-height: 150px;
+        overflow-y: auto;
+        margin-top: 0.5rem;
+        border: 1px solid #4b5563;
+        border-radius: 0.25rem;
+      }
+
+      .search-result-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid #4b5563;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+      }
+
+      .search-result-item:hover {
+        background: #4b5563;
+      }
+
+      .search-result-item:last-child {
+        border-bottom: none;
+      }
+
+      .config-section {
+        background: #374151;
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .config-section label {
+        display: block;
+        font-size: 0.75rem;
+        color: #d1d5db;
+        margin-bottom: 0.25rem;
+      }
+
+      .config-section input[type="range"] {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      .config-section input[type="checkbox"] {
+        margin-right: 0.5rem;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      /* Custom scrollbar styles */
+      .sidebar::-webkit-scrollbar,
+      .analysis-panel::-webkit-scrollbar,
+      .theme-list::-webkit-scrollbar,
+      .search-results::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .sidebar::-webkit-scrollbar-track,
+      .analysis-panel::-webkit-scrollbar-track,
+      .theme-list::-webkit-scrollbar-track,
+      .search-results::-webkit-scrollbar-track {
+        background: #1f2937;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb,
+      .analysis-panel::-webkit-scrollbar-thumb,
+      .theme-list::-webkit-scrollbar-thumb,
+      .search-results::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 4px;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb:hover,
+      .analysis-panel::-webkit-scrollbar-thumb:hover,
+      .theme-list::-webkit-scrollbar-thumb:hover,
+      .search-results::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useRef, useEffect } = React;
+
+      const EnhancedDocumentAnalyzer = () => {
+        // State management
+        const [documents, setDocuments] = useState([]);
+        const [graphData, setGraphData] = useState(null);
+        const [selectedNode, setSelectedNode] = useState(null);
+        const [hoveredNode, setHoveredNode] = useState(null);
+        const [analysisReport, setAnalysisReport] = useState(null);
+        const [loading, setLoading] = useState(false);
+        const [processingProgress, setProcessingProgress] = useState(0);
+        const [messages, setMessages] = useState([]);
+
+        // Search and chat state
+        const [searchQuery, setSearchQuery] = useState("");
+        const [searchResults, setSearchResults] = useState([]);
+        const [chatInput, setChatInput] = useState("");
+        const [chatHistory, setChatHistory] = useState([]);
+
+        // Configuration state
+        const [config, setConfig] = useState({
+          minThemeConfidence: 0.7,
+          maxThemesPerDocument: 8,
+          semanticSimilarityThreshold: 0.7,
+          connectionStrengthThreshold: 0.4,
+          enableSemanticAnalysis: true,
+          enableHierarchicalThemes: true,
+        });
+
+        // Refs
+        const mountRef = useRef(null);
+        const analyzerRef = useRef(null);
+        const fileInputRef = useRef(null);
+        const sceneRef = useRef(null);
+        const cameraRef = useRef(null);
+        const rendererRef = useRef(null);
+        const nodeObjectsRef = useRef({});
+        const hoveredNodeRef = useRef(null);
+        const selectedNodeRef = useRef(null);
+        const focusPointRef = useRef(new THREE.Vector3(0, 0, 0)); // Track orbital center
+        const controlsRef = useRef({
+          rotation: { x: 0, y: 0 },
+          autoRotate: false,
+        });
+
+        // Initialize analyzer
+        useEffect(() => {
+          if (window.CONFIG && window.CONFIG.OPENAI_API_KEY) {
+            analyzerRef.current = new DocumentConnectionAnalyzer(
+              window.CONFIG.OPENAI_API_KEY
+            );
+            addMessage(
+              "System initialized with enhanced analysis capabilities",
+              "success"
+            );
+          } else {
+            addMessage(
+              "OpenAI API key not found. Please check your config.js file.",
+              "error"
+            );
+          }
+        }, []);
+
+        // Sync hover and selection states with refs for animation loop
+        useEffect(() => {
+          hoveredNodeRef.current = hoveredNode;
+        }, [hoveredNode]);
+
+        useEffect(() => {
+          selectedNodeRef.current = selectedNode;
+        }, [selectedNode]);
+
+        // Initialize 3D graph when data is available
+        useEffect(() => {
+          if (graphData && mountRef.current) {
+            console.log("useEffect triggered with graphData:", graphData);
+            console.log("Nodes:", graphData.nodes?.length);
+            console.log("Links:", graphData.links?.length);
+            initializeThreeJSGraph();
+          }
+        }, [graphData]); // Added proper dependency
+
+        const addMessage = (content, type = "info") => {
+          setMessages((prev) => [
+            ...prev.slice(-4),
+            { content, type, timestamp: Date.now() },
+          ]);
+        };
+
+        const handleFileUpload = (event) => {
+          const files = Array.from(event.target.files);
+          const filePromises = files.map((file) => {
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                resolve({
+                  filename: file.name,
+                  title: file.name.replace(/\.[^/.]+$/, ""),
+                  content: e.target.result,
+                  size: file.size,
+                });
+              };
+              reader.readAsText(file);
+            });
+          });
+
+          Promise.all(filePromises)
+            .then((loadedDocs) => {
+              // Validate loaded documents
+              const validDocs = loadedDocs.filter((doc) => {
+                if (!doc || !doc.title || !doc.content) {
+                  console.warn("Skipping invalid document:", doc);
+                  return false;
+                }
+                return true;
+              });
+
+              if (validDocs.length !== loadedDocs.length) {
+                addMessage(
+                  `Loaded ${validDocs.length} valid documents (${
+                    loadedDocs.length - validDocs.length
+                  } skipped due to errors)`,
+                  "info"
+                );
+              } else {
+                addMessage(`Loaded ${validDocs.length} document(s)`, "success");
+              }
+
+              setDocuments((prev) => [...prev, ...validDocs]);
+            })
+            .catch((error) => {
+              console.error("File loading error:", error);
+              addMessage(`Error loading files: ${error.message}`, "error");
+            });
+        };
+
+        const processDocuments = async () => {
+          if (!analyzerRef.current || documents.length === 0) {
+            addMessage(
+              "No analyzer available or no documents to process",
+              "error"
+            );
+            return;
+          }
+
+          setLoading(true);
+          setProcessingProgress(0);
+          addMessage("Starting enhanced document analysis...", "info");
+
+          try {
+            // Simulate progress updates
+            const progressUpdates = [
+              { progress: 20, message: "Extracting themes and definitions..." },
+              {
+                progress: 40,
+                message: "Building optimized storage structure...",
+              },
+              { progress: 60, message: "Performing semantic analysis..." },
+              { progress: 80, message: "Building relationship graph..." },
+              { progress: 90, message: "Generating analysis report..." },
+            ];
+
+            let updateIndex = 0;
+            const progressInterval = setInterval(() => {
+              if (updateIndex < progressUpdates.length) {
+                const update = progressUpdates[updateIndex];
+                setProcessingProgress(update.progress);
+                addMessage(update.message, "info");
+                updateIndex++;
+              }
+            }, 2000);
+
+            const result = await analyzerRef.current.processDocuments(
+              documents,
+              config
+            );
+
+            clearInterval(progressInterval);
+            setProcessingProgress(100);
+
+            if (result.success) {
+              setGraphData(result.graphData);
+              setAnalysisReport(result.analysisReport);
+              addMessage(
+                `Analysis completed successfully! Processed ${result.documentIds.length} documents in ${result.processingTime}ms`,
+                "success"
+              );
+
+              // Log detailed results for debugging
+              console.log("Analysis Results:", result);
+              console.log("Graph Data:", result.graphData);
+              console.log("Analysis Report:", result.analysisReport);
+            } else {
+              console.error("Analysis failed with details:", result);
+              addMessage(`Analysis failed: ${result.error}`, "error");
+
+              // Show additional debug info if available
+              if (result.debugInfo) {
+                console.log("Debug info:", result.debugInfo);
+                if (
+                  result.originalError &&
+                  result.originalError !== result.error
+                ) {
+                  addMessage(
+                    `Technical details: ${result.originalError}`,
+                    "error"
+                  );
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Processing error:", error);
+            addMessage(`Processing error: ${error.message}`, "error");
+          } finally {
+            setLoading(false);
+            setProcessingProgress(0);
+          }
+        };
+
+        const initializeThreeJSGraph = () => {
+          console.log("=== initializeThreeJSGraph called ===");
+          console.log("mountRef.current:", mountRef.current);
+          console.log("graphData:", graphData);
+
+          if (!mountRef.current) {
+            console.error("No mount ref!");
+            return;
+          }
+
+          if (!graphData) {
+            console.error("No graph data!");
+            return;
+          }
+
+          if (!graphData.nodes || graphData.nodes.length === 0) {
+            console.error("No nodes in graph data!");
+            addMessage("No nodes to display in graph", "error");
+            return;
+          }
+
+          console.log(
+            `Found ${graphData.nodes.length} nodes and ${
+              graphData.links?.length || 0
+            } links`
+          );
+
+          // Clear any existing content
+          while (mountRef.current.firstChild) {
+            mountRef.current.removeChild(mountRef.current.firstChild);
+          }
+
+          // Initialize Three.js scene
+          const scene = new THREE.Scene();
+          scene.background = new THREE.Color(0x0a0a0a);
+          sceneRef.current = scene;
+
+          const camera = new THREE.PerspectiveCamera(
+            75,
+            mountRef.current.clientWidth / mountRef.current.clientHeight,
+            0.1,
+            1000
+          );
+          camera.position.set(0, 0, 50);
+          cameraRef.current = camera;
+
+          const renderer = new THREE.WebGLRenderer({ antialias: true });
+          renderer.setSize(
+            mountRef.current.clientWidth,
+            mountRef.current.clientHeight
+          );
+          mountRef.current.appendChild(renderer.domElement);
+          rendererRef.current = renderer;
+
+          console.log("Scene, camera, and renderer initialized");
+
+          // Add lighting
+          const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+          scene.add(ambientLight);
+          const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+          directionalLight.position.set(20, 30, 50);
+          scene.add(directionalLight);
+
+          // Apply force-directed layout for better organization
+          console.log("Applying force-directed layout...");
+          applyForceDirectedLayout(graphData);
+
+          graphData.nodes.forEach((node, i) => {
+            console.log(
+              `Node ${i} (${node.label}): x=${node.x.toFixed(
+                2
+              )}, y=${node.y.toFixed(2)}, z=${node.z.toFixed(2)}`
+            );
+          });
+
+          // Create nodes
+          const nodeObjects = {};
+
+          console.log("Creating node meshes...");
+          graphData.nodes.forEach((node, i) => {
+            const size = (node.size || 5) / 10;
+            const geometry = new THREE.SphereGeometry(size, 16, 16);
+
+            let color;
+            try {
+              color = new THREE.Color(node.color || "#60a5fa");
+            } catch (e) {
+              console.warn(`Invalid color for node ${i}:`, node.color);
+              color = new THREE.Color("#60a5fa");
+            }
+
+            const material = new THREE.MeshPhongMaterial({
+              color: color,
+              emissive: color,
+              emissiveIntensity: 0.3,
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(node.x / 10, node.y / 10, node.z / 10);
+            mesh.userData = { nodeId: node.id, nodeData: node };
+
+            scene.add(mesh);
+            nodeObjects[node.id] = mesh;
+
+            console.log(`Added mesh for node ${i}: ${node.label}`);
+          });
+
+          // Store nodeObjects in ref for animation loop access
+          nodeObjectsRef.current = nodeObjects;
+
+          console.log(`Created ${Object.keys(nodeObjects).length} node meshes`);
+
+          // Create links with visible tubes
+          if (graphData.links && graphData.links.length > 0) {
+            console.log("Creating links with tubes...");
+            let successfulLinks = 0;
+
+            graphData.links.forEach((link, i) => {
+              const sourceNode = graphData.nodes.find(
+                (n) => n.id === link.source
+              );
+              const targetNode = graphData.nodes.find(
+                (n) => n.id === link.target
+              );
+
+              if (sourceNode && targetNode) {
+                // Validate positions
+                const sx = sourceNode.x / 10;
+                const sy = sourceNode.y / 10;
+                const sz = sourceNode.z / 10;
+                const tx = targetNode.x / 10;
+                const ty = targetNode.y / 10;
+                const tz = targetNode.z / 10;
+
+                // Check for valid numbers
+                if (
+                  isFinite(sx) &&
+                  isFinite(sy) &&
+                  isFinite(sz) &&
+                  isFinite(tx) &&
+                  isFinite(ty) &&
+                  isFinite(tz)
+                ) {
+                  try {
+                    // Create a tube between the two points
+                    const start = new THREE.Vector3(sx, sy, sz);
+                    const end = new THREE.Vector3(tx, ty, tz);
+
+                    // Create a curve between start and end
+                    const curve = new THREE.LineCurve3(start, end);
+
+                    // Create tube geometry along the curve
+                    const tubeGeometry = new THREE.TubeGeometry(
+                      curve, // path
+                      1, // tubular segments
+                      0.08, // radius (thicker = more visible)
+                      8, // radial segments
+                      false // closed
+                    );
+
+                    // Create glowing material
+                    const tubeMaterial = new THREE.MeshBasicMaterial({
+                      color: 0x60a5fa, // Bright blue
+                      transparent: true,
+                      opacity: 0.8,
+                    });
+
+                    const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+                    scene.add(tube);
+                    successfulLinks++;
+
+                    if (i < 3) {
+                      console.log(
+                        `✓ Tube link ${i}: ${sourceNode.label} → ${targetNode.label}`
+                      );
+                    }
+                  } catch (error) {
+                    console.error(`Error creating tube for link ${i}:`, error);
+                  }
+                } else {
+                  console.warn(
+                    `Invalid positions for link ${i}: source(${sx},${sy},${sz}) target(${tx},${ty},${tz})`
+                  );
+                }
+              } else {
+                console.warn(
+                  `Could not find nodes for link ${i}: source=${link.source}, target=${link.target}`
+                );
+              }
+            });
+
+            console.log(
+              `✓ Created ${successfulLinks} tube links out of ${graphData.links.length} total`
+            );
+          } else {
+            console.log("No links to create");
+          }
+
+          // Mouse interaction
+          const raycaster = new THREE.Raycaster();
+          const mouse = new THREE.Vector2();
+
+          const onMouseClick = (event) => {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(
+              Object.values(nodeObjects)
+            );
+
+            if (intersects.length > 0) {
+              const nodeData = intersects[0].object.userData.nodeData;
+              console.log("Node clicked:", nodeData.label);
+              setSelectedNode(nodeData);
+              focusOnNode(nodeData); // Zoom in on clicked node
+            } else {
+              setSelectedNode(null);
+            }
+          };
+
+          renderer.domElement.addEventListener("click", onMouseClick);
+
+          // Camera controls
+          let isDragging = false;
+          let previousMousePosition = { x: 0, y: 0 };
+
+          const onMouseDown = (event) => {
+            isDragging = true;
+            previousMousePosition = { x: event.clientX, y: event.clientY };
+          };
+
+          const onMouseMove = (event) => {
+            // Handle hover detection when not dragging
+            if (!isDragging) {
+              const rect = renderer.domElement.getBoundingClientRect();
+              mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+              mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+              raycaster.setFromCamera(mouse, camera);
+              const intersects = raycaster.intersectObjects(
+                Object.values(nodeObjects)
+              );
+
+              if (intersects.length > 0) {
+                const nodeData = intersects[0].object.userData.nodeData;
+                setHoveredNode(nodeData);
+                renderer.domElement.style.cursor = "pointer";
+              } else {
+                setHoveredNode(null);
+                renderer.domElement.style.cursor = "default";
+              }
+              return;
+            }
+
+            // Handle dragging/rotation
+            const deltaX = event.clientX - previousMousePosition.x;
+            const deltaY = event.clientY - previousMousePosition.y;
+
+            controlsRef.current.rotation.y += deltaX * 0.01;
+            controlsRef.current.rotation.x += deltaY * 0.01;
+
+            controlsRef.current.rotation.x = Math.max(
+              -Math.PI / 2,
+              Math.min(Math.PI / 2, controlsRef.current.rotation.x)
+            );
+
+            // Get the focus point (selected node position or origin)
+            const focusPoint = focusPointRef.current;
+            
+            // Calculate distance from camera to focus point
+            const dx = camera.position.x - focusPoint.x;
+            const dy = camera.position.y - focusPoint.y;
+            const dz = camera.position.z - focusPoint.z;
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            // Calculate new camera position around the focus point
+            camera.position.x =
+              focusPoint.x +
+              distance *
+              Math.sin(controlsRef.current.rotation.y) *
+              Math.cos(controlsRef.current.rotation.x);
+            camera.position.y =
+              focusPoint.y +
+              distance * Math.sin(controlsRef.current.rotation.x);
+            camera.position.z =
+              focusPoint.z +
+              distance *
+              Math.cos(controlsRef.current.rotation.y) *
+              Math.cos(controlsRef.current.rotation.x);
+            
+            camera.lookAt(focusPoint);
+
+            previousMousePosition = { x: event.clientX, y: event.clientY };
+          };
+
+          const onMouseUp = () => {
+            isDragging = false;
+          };
+
+          const onWheel = (event) => {
+            event.preventDefault();
+
+            const zoomSpeed = event.deltaY * 0.05;
+            
+            // Get the focus point (selected node position or origin)
+            const focusPoint = focusPointRef.current;
+            
+            // Calculate current distance from camera to focus point
+            const dx = camera.position.x - focusPoint.x;
+            const dy = camera.position.y - focusPoint.y;
+            const dz = camera.position.z - focusPoint.z;
+            const currentDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            // Calculate new distance with limits
+            const newDistance = Math.max(
+              15,
+              Math.min(150, currentDistance + zoomSpeed)
+            );
+            const scale = newDistance / currentDistance;
+
+            // Scale camera position relative to focus point
+            camera.position.x = focusPoint.x + dx * scale;
+            camera.position.y = focusPoint.y + dy * scale;
+            camera.position.z = focusPoint.z + dz * scale;
+            
+            camera.lookAt(focusPoint);
+          };
+
+          renderer.domElement.addEventListener("mousedown", onMouseDown);
+          renderer.domElement.addEventListener("mousemove", onMouseMove);
+          renderer.domElement.addEventListener("mouseup", onMouseUp);
+          renderer.domElement.addEventListener("wheel", onWheel);
+          renderer.domElement.addEventListener("contextmenu", (e) =>
+            e.preventDefault()
+          );
+
+          console.log("Starting render loop...");
+
+          // Render loop
+          const animate = () => {
+            requestAnimationFrame(animate);
+
+            if (controlsRef.current.autoRotate) {
+              controlsRef.current.rotation.y += 0.005;
+              
+              // Get focus point and current distance
+              const focusPoint = focusPointRef.current;
+              const dx = camera.position.x - focusPoint.x;
+              const dy = camera.position.y - focusPoint.y;
+              const dz = camera.position.z - focusPoint.z;
+              const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+              
+              // Rotate around focus point
+              camera.position.x =
+                focusPoint.x + distance * Math.sin(controlsRef.current.rotation.y);
+              camera.position.z =
+                focusPoint.z + distance * Math.cos(controlsRef.current.rotation.y);
+              camera.lookAt(focusPoint);
+            }
+
+            // Update node visual states for hover and selection
+            Object.values(nodeObjectsRef.current).forEach((mesh) => {
+              const nodeData = mesh.userData.nodeData;
+              const isHovered =
+                hoveredNodeRef.current &&
+                hoveredNodeRef.current.id === nodeData.id;
+              const isSelected =
+                selectedNodeRef.current &&
+                selectedNodeRef.current.id === nodeData.id;
+
+              if (isSelected) {
+                // Selected nodes: larger scale and brighter
+                mesh.scale.set(1.5, 1.5, 1.5);
+                mesh.material.emissiveIntensity = 0.8;
+              } else if (isHovered) {
+                // Hovered nodes: slightly larger and brighter
+                mesh.scale.set(1.3, 1.3, 1.3);
+                mesh.material.emissiveIntensity = 0.6;
+              } else {
+                // Normal nodes
+                mesh.scale.set(1, 1, 1);
+                mesh.material.emissiveIntensity = 0.3;
+              }
+            });
+
+            renderer.render(scene, camera);
+          };
+          animate();
+
+          console.log("Graph initialization complete!");
+          addMessage(
+            `Graph displayed with ${graphData.nodes.length} nodes`,
+            "success"
+          );
+        };
+
+        const applyForceDirectedLayout = (graphData) => {
+          console.log(
+            "=== Starting applyForceDirectedLayout (orbital layout) ==="
+          );
+
+          if (!graphData || !graphData.nodes || graphData.nodes.length === 0) {
+            console.error("Invalid graphData");
+            return;
+          }
+
+          const nodeCount = graphData.nodes.length;
+          const isValid = (n) => n != null && isFinite(n) && !isNaN(n);
+
+          // Helper to validate node positions
+          const validateNode = (node, fallbackIndex) => {
+            if (!isValid(node.x) || !isValid(node.y) || !isValid(node.z)) {
+              const angle = (fallbackIndex / nodeCount) * Math.PI * 2;
+              node.x = Math.cos(angle) * 150;
+              node.y = 0;
+              node.z = Math.sin(angle) * 150;
+            }
+          };
+
+          // 🧩 Parent → children mapping
+          const parentToChildren = {};
+          if (graphData.links) {
+            graphData.links.forEach((link) => {
+              if (!parentToChildren[link.source])
+                parentToChildren[link.source] = [];
+              parentToChildren[link.source].push(link.target);
+            });
+          }
+
+          // 🌐 INITIAL PARENT DISTRIBUTION (document nodes only)
+          const parents = graphData.nodes.filter((n) => n.type === "DOCUMENT");
+          const children = graphData.nodes.filter((n) => n.type !== "DOCUMENT");
+
+          for (let i = 0; i < parents.length; i++) {
+            const parent = parents[i];
+            const angle = (i / parents.length) * Math.PI * 2;
+            const radius = 250;
+            parent.x = Math.cos(angle) * radius;
+            parent.y = (Math.random() - 0.5) * 50;
+            parent.z = Math.sin(angle) * radius;
+            validateNode(parent, i);
+          }
+
+          // 🪐 CHILDREN ORBITAL LAYOUT
+          const orbitRadius = 60; // how far children orbit around parent
+          for (const parentId in parentToChildren) {
+            const parent = graphData.nodes.find((n) => n.id === parentId);
+            if (!parent) continue;
+
+            const childIds = parentToChildren[parentId];
+            const childCount = childIds.length;
+
+            for (let i = 0; i < childCount; i++) {
+              const child = graphData.nodes.find((n) => n.id === childIds[i]);
+              if (!child) continue;
+
+              // Compute orbital position
+              const angle = (i / childCount) * Math.PI * 2;
+              const tilt = (Math.random() - 0.5) * 0.5; // some z-axis variance
+              const radius = orbitRadius + Math.random() * 20;
+
+              child.x = parent.x + Math.cos(angle) * radius;
+              child.y = parent.y + Math.sin(angle) * radius * tilt;
+              child.z = parent.z + Math.sin(angle) * radius;
+            }
+          }
+
+          // 💥 Add global repulsion for better overall spacing
+          const iterations = 150;
+          const velocities = new Map();
+          for (let i = 0; i < nodeCount; i++) {
+            velocities.set(graphData.nodes[i].id, { x: 0, y: 0, z: 0 });
+          }
+
+          for (let iter = 0; iter < iterations; iter++) {
+            const forces = new Map();
+            for (let i = 0; i < nodeCount; i++) {
+              forces.set(graphData.nodes[i].id, { x: 0, y: 0, z: 0 });
+            }
+
+            // Repulsion between all nodes
+            for (let i = 0; i < nodeCount; i++) {
+              for (let j = i + 1; j < nodeCount; j++) {
+                const n1 = graphData.nodes[i];
+                const n2 = graphData.nodes[j];
+                const dx = n2.x - n1.x;
+                const dy = n2.y - n1.y;
+                const dz = n2.z - n1.z;
+                const distSq = Math.max(1, dx * dx + dy * dy + dz * dz);
+                const dist = Math.sqrt(distSq);
+                const repulsion = 5000 / distSq;
+
+                const fx = (dx / dist) * repulsion;
+                const fy = (dy / dist) * repulsion;
+                const fz = (dz / dist) * repulsion;
+
+                const f1 = forces.get(n1.id);
+                const f2 = forces.get(n2.id);
+
+                f1.x -= fx;
+                f1.y -= fy;
+                f1.z -= fz;
+                f2.x += fx;
+                f2.y += fy;
+                f2.z += fz;
+              }
+            }
+
+            // Apply velocity/damping
+            const damping = 0.85;
+            for (let i = 0; i < nodeCount; i++) {
+              const node = graphData.nodes[i];
+              const f = forces.get(node.id);
+              const v = velocities.get(node.id);
+
+              v.x = (v.x + f.x) * damping;
+              v.y = (v.y + f.y) * damping;
+              v.z = (v.z + f.z) * damping;
+
+              node.x += v.x;
+              node.y += v.y;
+              node.z += v.z;
+            }
+          }
+
+          // 🌎 Center and scale the graph
+          let cx = 0,
+            cy = 0,
+            cz = 0;
+          for (const node of graphData.nodes) {
+            cx += node.x;
+            cy += node.y;
+            cz += node.z;
+          }
+          cx /= nodeCount;
+          cy /= nodeCount;
+          cz /= nodeCount;
+
+          for (const node of graphData.nodes) {
+            node.x -= cx;
+            node.y -= cy;
+            node.z -= cz;
+          }
+
+          console.log("✓ Orbital layout complete!");
+        };
+
+        const updateConfig = (key, value) => {
+          setConfig((prev) => ({ ...prev, [key]: value }));
+        };
+
+        const handleSearch = (query) => {
+          setSearchQuery(query);
+          if (!query.trim() || !graphData) {
+            setSearchResults([]);
+            return;
+          }
+
+          const lowerQuery = query.toLowerCase();
+          const results = [];
+
+          // Search in document nodes
+          graphData.nodes.forEach((node) => {
+            if (node.label.toLowerCase().includes(lowerQuery)) {
+              results.push({
+                id: node.id,
+                label: node.label,
+                type: node.type,
+                relevance: node.label.toLowerCase() === lowerQuery ? 1 : 0.5,
+              });
+            }
+          });
+
+          // Sort by relevance
+          results.sort((a, b) => b.relevance - a.relevance);
+          setSearchResults(results.slice(0, 10));
+        };
+
+        const handleSearchSelect = (nodeId) => {
+          if (sceneRef.current && cameraRef.current) {
+            const node = graphData.nodes.find((n) => n.id === nodeId);
+            if (node) {
+              focusOnNode(node);
+              setSelectedNode(node);
+            }
+          }
+          setSearchQuery("");
+          setSearchResults([]);
+        };
+
+        const handleChatSubmit = async () => {
+          if (!chatInput.trim() || !analyzerRef.current) return;
+
+          const userMessage = chatInput.trim();
+          setChatInput("");
+
+          setChatHistory((prev) => [
+            ...prev,
+            { role: "user", content: userMessage },
+          ]);
+          setLoading(true);
+
+          try {
+            // Build context for the LLM
+            const context = {
+              documents: documents.map((doc) => ({
+                title: doc.title,
+                summary: doc.summary || doc.content?.slice(0, 200),
+              })),
+              analysisReport: analysisReport,
+              graphStats: graphData?.metadata,
+              totalDocuments: documents.length,
+              totalThemes: analysisReport?.overview?.totalThemes || 0,
+              sharedThemes: analysisReport?.overview?.sharedThemes || 0,
+              topSharedThemes:
+                analysisReport?.themeAnalysis?.topSharedThemes
+                  ?.slice(0, 5)
+                  .map((t) => ({
+                    label: t.label,
+                    sharedBy: t.sharedBy.length,
+                  })) || [],
+              connectivity: analysisReport?.connectivity || {},
+              themeCategories:
+                analysisReport?.themeAnalysis?.themeCategories || {},
+            };
+
+            const prompt = `You are an AI assistant helping analyze document relationships and themes. 
+
+CONTEXT:
+- Total documents: ${context.totalDocuments}
+- Total themes: ${context.totalThemes}
+- Shared themes: ${context.sharedThemes}
+- Document titles: ${context.documents.map((d) => d.title).join(", ")}
+- Top shared themes: ${context.topSharedThemes
+              .map((t) => `"${t.label}" (${t.sharedBy} docs)`)
+              .join(", ")}
+- Most connected document: ${
+              context.connectivity.mostConnectedDocument?.document?.title ||
+              "N/A"
+            }
+- Isolated documents: ${context.connectivity.isolatedDocuments?.length || 0}
+
+USER QUESTION: ${userMessage}
+
+Provide a helpful, concise answer based on the analysis context. If the user asks about:
+- Statistics: Give specific numbers from the context
+- Connections: Explain which documents are connected and why
+- Themes: Describe the themes and their relationships
+- Specific documents: Reference them by name
+- Recommendations: Suggest insights based on the analysis
+
+Keep your response brief (2-3 sentences) and actionable.`;
+
+            const response = await fetch(
+              "https://api.openai.com/v1/chat/completions",
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${window.CONFIG.OPENAI_API_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  model: "gpt-4o-mini",
+                  messages: [
+                    {
+                      role: "system",
+                      content:
+                        "You are a helpful assistant analyzing document relationships and themes. Be concise and specific.",
+                    },
+                    { role: "user", content: prompt },
+                  ],
+                  temperature: 0.7,
+                  max_tokens: 300,
+                }),
+              }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.error?.message || "API request failed");
+            }
+
+            const assistantMessage =
+              data.choices?.[0]?.message?.content ||
+              "I apologize, but I could not generate a response.";
+
+            setChatHistory((prev) => [
+              ...prev,
+              { role: "assistant", content: assistantMessage },
+            ]);
+          } catch (error) {
+            console.error("Chat error:", error);
+            setChatHistory((prev) => [
+              ...prev,
+              {
+                role: "assistant",
+                content: `Error: ${error.message}. Please check your API key and try again.`,
+              },
+            ]);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        const focusOnNode = (node) => {
+          if (!cameraRef.current) return;
+
+          const targetPos = new THREE.Vector3(
+            node.x / 10,
+            node.y / 10,
+            node.z / 10
+          );
+          
+          // Update the focus point to the selected node
+          focusPointRef.current.copy(targetPos);
+          
+          const distance = 20;
+          const direction = new THREE.Vector3(0, 0, 1);
+
+          const startPos = cameraRef.current.position.clone();
+          const endPos = targetPos
+            .clone()
+            .add(direction.multiplyScalar(distance));
+
+          const duration = 1000;
+          const startTime = Date.now();
+
+          const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            cameraRef.current.position.lerpVectors(startPos, endPos, eased);
+            cameraRef.current.lookAt(targetPos);
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              // After animation completes, update rotation angles to match final camera position
+              const dx = cameraRef.current.position.x - targetPos.x;
+              const dy = cameraRef.current.position.y - targetPos.y;
+              const dz = cameraRef.current.position.z - targetPos.z;
+              const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+              
+              controlsRef.current.rotation.x = Math.asin(dy / dist);
+              controlsRef.current.rotation.y = Math.atan2(dx, dz);
+            }
+          };
+          animate();
+        };
+
+        const toggleAutoRotate = () => {
+          controlsRef.current.autoRotate = !controlsRef.current.autoRotate;
+        };
+
+        const resetCamera = () => {
+          if (!cameraRef.current) return;
+
+          // Reset focus point to origin
+          focusPointRef.current.set(0, 0, 0);
+          
+          // Clear selected node
+          setSelectedNode(null);
+
+          const startPos = cameraRef.current.position.clone();
+          const endPos = new THREE.Vector3(0, 0, 50);
+          const duration = 1000;
+          const startTime = Date.now();
+
+          const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            cameraRef.current.position.lerpVectors(startPos, endPos, eased);
+            cameraRef.current.lookAt(0, 0, 0);
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              // Reset rotation angles
+              controlsRef.current.rotation.x = 0;
+              controlsRef.current.rotation.y = 0;
+            }
+          };
+          animate();
+        };
+
+        const zoomIn = () => {
+          if (!cameraRef.current) return;
+
+          const focusPoint = focusPointRef.current;
+          const dx = cameraRef.current.position.x - focusPoint.x;
+          const dy = cameraRef.current.position.y - focusPoint.y;
+          const dz = cameraRef.current.position.z - focusPoint.z;
+          const currentDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+          const newDistance = Math.max(15, currentDistance - 10);
+          const scale = newDistance / currentDistance;
+
+          cameraRef.current.position.x = focusPoint.x + dx * scale;
+          cameraRef.current.position.y = focusPoint.y + dy * scale;
+          cameraRef.current.position.z = focusPoint.z + dz * scale;
+          cameraRef.current.lookAt(focusPoint);
+        };
+
+        const zoomOut = () => {
+          if (!cameraRef.current) return;
+
+          const focusPoint = focusPointRef.current;
+          const dx = cameraRef.current.position.x - focusPoint.x;
+          const dy = cameraRef.current.position.y - focusPoint.y;
+          const dz = cameraRef.current.position.z - focusPoint.z;
+          const currentDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+          const newDistance = Math.min(150, currentDistance + 10);
+          const scale = newDistance / currentDistance;
+
+          cameraRef.current.position.x = focusPoint.x + dx * scale;
+          cameraRef.current.position.y = focusPoint.y + dy * scale;
+          cameraRef.current.position.z = focusPoint.z + dz * scale;
+          cameraRef.current.lookAt(focusPoint);
+        };
+
+        return (
+          <div className="container">
+            <div className="header">
+              <div className="header-title">
+                <h1>Enhanced Document Knowledge Graph Analyzer</h1>
+                <span className="badge">Enhanced</span>
+              </div>
+              <div style={{ fontSize: "0.875rem", color: "#9ca3af" }}>
+                {documents.length} documents loaded
+              </div>
+            </div>
+
+            <div className="main-content">
+              <div className="sidebar">
+                <div className="sidebar-section">
+                  <h3>Document Upload</h3>
+                  <div className="file-upload">
+                    <div
+                      className="upload-button"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <div>📄</div>
+                      <div>Drop files here or click to browse</div>
+                      <div style={{ fontSize: "0.75rem", marginTop: "0.5rem" }}>
+                        Supports .txt files
+                      </div>
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept=".txt"
+                      onChange={handleFileUpload}
+                    />
+                    <button
+                      className="process-button"
+                      onClick={processDocuments}
+                      disabled={loading || documents.length === 0}
+                    >
+                      {loading ? (
+                        <div className="loading-state">
+                          <div className="spinner"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        "Analyze Documents"
+                      )}
+                    </button>
+                    {loading && (
+                      <div className="progress-bar">
+                        <div
+                          className="progress-fill"
+                          style={{ width: `${processingProgress}%` }}
+                        ></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="analysis-section">
+                  <h4>Analysis Configuration</h4>
+                  <div className="config-section">
+                    <label>
+                      Theme Confidence Threshold: {config.minThemeConfidence}
+                    </label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1.0"
+                      step="0.1"
+                      value={config.minThemeConfidence}
+                      onChange={(e) =>
+                        updateConfig(
+                          "minThemeConfidence",
+                          parseFloat(e.target.value)
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="config-section">
+                    <label>
+                      Max Themes per Document: {config.maxThemesPerDocument}
+                    </label>
+                    <input
+                      type="range"
+                      min="3"
+                      max="15"
+                      step="1"
+                      value={config.maxThemesPerDocument}
+                      onChange={(e) =>
+                        updateConfig(
+                          "maxThemesPerDocument",
+                          parseInt(e.target.value)
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="config-section">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={config.enableSemanticAnalysis}
+                        onChange={(e) =>
+                          updateConfig(
+                            "enableSemanticAnalysis",
+                            e.target.checked
+                          )
+                        }
+                      />
+                      Enable Semantic Analysis
+                    </label>
+                  </div>
+                </div>
+
+                <div className="sidebar-section">
+                  <h3>Search Graph</h3>
+                  <div className="chat-section">
+                    <input
+                      type="text"
+                      className="chat-input"
+                      placeholder="Search for documents or themes..."
+                      value={searchQuery}
+                      onChange={(e) => handleSearch(e.target.value)}
+                    />
+                    {searchResults.length > 0 && (
+                      <div className="search-results">
+                        {searchResults.map((result, idx) => (
+                          <div
+                            key={idx}
+                            className="search-result-item"
+                            onClick={() => handleSearchSelect(result.id)}
+                          >
+                            <strong>{result.label}</strong>
+                            <div
+                              style={{ fontSize: "0.75rem", color: "#9ca3af" }}
+                            >
+                              {result.type}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="sidebar-section">
+                  <h3>Ask Questions</h3>
+                  <div className="chat-section">
+                    <div
+                      style={{
+                        maxHeight: "150px",
+                        overflowY: "auto",
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      {chatHistory.map((msg, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            marginBottom: "0.5rem",
+                            padding: "0.5rem",
+                            background:
+                              msg.role === "user" ? "#374151" : "#1f2937",
+                            borderRadius: "0.375rem",
+                            fontSize: "0.875rem",
+                          }}
+                        >
+                          <strong>
+                            {msg.role === "user" ? "You" : "Assistant"}:
+                          </strong>{" "}
+                          {msg.content}
+                        </div>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      className="chat-input"
+                      placeholder="Ask about the analysis..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && handleChatSubmit()
+                      }
+                    />
+                    <button
+                      className="process-button"
+                      onClick={handleChatSubmit}
+                      style={{ marginTop: "0.5rem", width: "100%" }}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+
+                <div className="analysis-panel">
+                  {messages.map((message, idx) => (
+                    <div key={idx} className={`message ${message.type}`}>
+                      {message.content}
+                    </div>
+                  ))}
+
+                  {analysisReport && (
+                    <div className="analysis-section">
+                      <h4>Analysis Overview</h4>
+                      <div className="stat-grid">
+                        <div className="stat-item">
+                          <div className="stat-value">
+                            {analysisReport.overview.totalDocuments}
+                          </div>
+                          <div className="stat-label">Documents</div>
+                        </div>
+                        <div className="stat-item">
+                          <div className="stat-value">
+                            {analysisReport.overview.totalThemes}
+                          </div>
+                          <div className="stat-label">Themes</div>
+                        </div>
+                        <div className="stat-item">
+                          <div className="stat-value">
+                            {analysisReport.overview.sharedThemes}
+                          </div>
+                          <div className="stat-label">Shared</div>
+                        </div>
+                        <div className="stat-item">
+                          <div className="stat-value">
+                            {analysisReport.overview.avgThemesPerDoc.toFixed(1)}
+                          </div>
+                          <div className="stat-label">Avg/Doc</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {analysisReport?.themeAnalysis?.topSharedThemes && (
+                    <div className="analysis-section">
+                      <h4>Top Shared Themes</h4>
+                      <div className="theme-list">
+                        {analysisReport.themeAnalysis.topSharedThemes
+                          .slice(0, 5)
+                          .map((theme, idx) => (
+                            <div key={idx} className="theme-item">
+                              <span className="theme-label">{theme.label}</span>
+                              <span className="theme-badge">
+                                {theme.sharedBy.length} docs
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="graph-container">
+                <div className="graph-controls">
+                  <button
+                    className="control-button"
+                    onClick={resetCamera}
+                    title="Reset View"
+                  >
+                    🏠
+                  </button>
+                  <button
+                    className="control-button"
+                    onClick={zoomIn}
+                    title="Zoom In"
+                  >
+                    ➕
+                  </button>
+                  <button
+                    className="control-button"
+                    onClick={zoomOut}
+                    title="Zoom Out"
+                  >
+                    ➖
+                  </button>
+                  <button
+                    className="control-button"
+                    onClick={toggleAutoRotate}
+                    title="Toggle Auto-Rotate"
+                  >
+                    🔄
+                  </button>
+                </div>
+
+                <div
+                  ref={mountRef}
+                  style={{ width: "100%", height: "100%" }}
+                ></div>
+
+                {selectedNode && (
+                  <div className="graph-overlay">
+                    <div className="node-details">
+                      <h4>{selectedNode.label}</h4>
+                      <p>
+                        <strong>Type:</strong> {selectedNode.type}
+                      </p>
+                      {selectedNode.metadata && (
+                        <>
+                          {selectedNode.metadata.themeCount && (
+                            <p>
+                              <strong>Themes:</strong>{" "}
+                              {selectedNode.metadata.themeCount}
+                            </p>
+                          )}
+                          {selectedNode.metadata.sharedBy && (
+                            <p>
+                              <strong>Shared by:</strong>{" "}
+                              {selectedNode.metadata.sharedBy.length} documents
+                            </p>
+                          )}
+                          {selectedNode.metadata.category && (
+                            <p>
+                              <strong>Category:</strong>{" "}
+                              {selectedNode.metadata.category}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {hoveredNode && !selectedNode && (
+                  <div className="hover-tooltip">
+                    <strong>{hoveredNode.label}</strong>
+                    <div
+                      style={{
+                        fontSize: "0.85rem",
+                        opacity: 0.9,
+                        marginTop: "0.25rem",
+                      }}
+                    >
+                      {hoveredNode.type}
+                    </div>
+                  </div>
+                )}
+
+                {!graphData && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      textAlign: "center",
+                      color: "#9ca3af",
+                    }}
+                  >
+                    <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
+                      📊
+                    </div>
+                    <div>
+                      Upload documents and click "Analyze Documents" to see the
+                      graph
+                    </div>
+                    <div style={{ fontSize: "0.875rem", marginTop: "0.5rem" }}>
+                      Controls: Drag to rotate, Scroll to zoom, Click nodes to
+                      select
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      ReactDOM.render(
+        <EnhancedDocumentAnalyzer />,
+        document.getElementById("root")
+      );
+    </script>
+  </body>
+</html>
