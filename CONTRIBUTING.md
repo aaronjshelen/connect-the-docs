@@ -38,6 +38,7 @@ refactor: Optimize force-directed layout algorithm
 ```
 
 Prefix types:
+
 - `feat:` - New feature
 - `fix:` - Bug fix
 - `docs:` - Documentation changes
@@ -49,6 +50,7 @@ Prefix types:
 ### Testing
 
 Before submitting:
+
 - [ ] Test with multiple document types
 - [ ] Check browser console for errors
 - [ ] Test in different browsers (Chrome, Firefox, Safari)
@@ -98,6 +100,7 @@ We welcome feature suggestions! Please:
 Good places to start:
 
 ### Beginner-Friendly
+
 - Improve error messages
 - Add tooltips to UI elements
 - Fix styling issues
@@ -105,6 +108,7 @@ Good places to start:
 - Add code comments
 
 ### Intermediate
+
 - Optimize graph rendering
 - Improve LLM prompts
 - Add new graph layouts
@@ -112,6 +116,7 @@ Good places to start:
 - Improve accessibility
 
 ### Advanced
+
 - Add WebWorkers for processing
 - Implement graph clustering
 - Add alternative LLM providers
@@ -134,6 +139,7 @@ Good places to start:
 ## ❓ Questions?
 
 Feel free to:
+
 - Open an issue with the `question` label
 - Start a discussion in GitHub Discussions
 

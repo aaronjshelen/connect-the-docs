@@ -1,5 +1,5 @@
 // Configuration file for Document Knowledge Graph Analyzer
-// 
+//
 // SETUP INSTRUCTIONS:
 // 1. Copy this file and rename it to 'config.js'
 // 2. Replace 'your-openai-api-key-here' with your actual OpenAI API key
@@ -12,8 +12,8 @@
 window.CONFIG = {
   // Your OpenAI API key
   // Get one at: https://platform.openai.com/api-keys
-  OPENAI_API_KEY: 'your-openai-api-key-here',
-  
+  OPENAI_API_KEY: "your-openai-api-key-here",
+
   // Optional: API configuration
   // Uncomment and modify if needed
   /*

@@ -5,6 +5,7 @@
 ### 1. Adjust LLM Prompt for Better Responses
 
 #### Theme Extraction Improvements
+
 - [ ] Add more specific examples in the prompt for diverse document types
 - [ ] Request LLM to provide confidence scores for each theme
 - [ ] Add validation step to ensure themes are meaningful (not too generic)
@@ -12,17 +13,20 @@
 - [ ] Add prompt instruction to avoid single-word themes (prefer descriptive phrases)
 
 #### Relationship Analysis Enhancements
+
 - [ ] Improve prompt to identify causal relationships vs. correlational
 - [ ] Request specific evidence/quotes when identifying connections
 - [ ] Add prompt section for identifying contrasting themes (not just shared ones)
 - [ ] Request relationship type classification (supports, contradicts, extends, etc.)
 
 #### Definition Extraction
+
 - [ ] Add prompt instruction to extract domain-specific terminology
 - [ ] Request multiple definitions when terms have different contexts
 - [ ] Add examples of good vs. bad definition extraction
 
 #### Edge Cases
+
 - [ ] Handle very short documents (< 100 words)
 - [ ] Handle very long documents (> 10,000 words) - add chunking strategy
 - [ ] Handle documents with mixed languages
@@ -30,6 +34,7 @@
 - [ ] Handle documents with mostly numeric content
 
 #### Response Quality
+
 - [ ] Add prompt instruction to avoid hallucination
 - [ ] Request structured JSON with validation markers
 - [ ] Add retry logic for malformed responses
@@ -37,14 +42,8 @@
 
 ### 2. Fix UI
 
-#### Layout & Responsiveness
-- [ ] Add mobile-responsive breakpoints (currently desktop-only)
-- [ ] Implement collapsible sidebar for mobile views
-- [ ] Make graph controls stack vertically on small screens
-- [ ] Add viewport meta tags for mobile optimization
-- [ ] Test on tablets (iPad, Surface)
-
 #### Visual Improvements
+
 - [ ] Add loading skeleton screens instead of just progress bars
 - [ ] Improve color scheme for better contrast (accessibility)
 - [ ] Add visual indicators for node types (different shapes for documents vs themes)
@@ -52,6 +51,7 @@
 - [ ] Add legend explaining node colors and sizes
 
 #### User Experience
+
 - [ ] Add keyboard shortcuts (ESC to deselect, Space to toggle rotation, etc.)
 - [ ] Implement undo/redo for camera positions
 - [ ] Add "breadcrumb" showing current focused node path
@@ -59,6 +59,7 @@
 - [ ] Add tooltips to all UI buttons explaining their function
 
 #### Accessibility (WCAG 2.1)
+
 - [ ] Add ARIA labels to all interactive elements
 - [ ] Ensure keyboard navigation works for all features
 - [ ] Add screen reader descriptions for graph state
@@ -67,6 +68,7 @@
 - [ ] Test with screen readers (NVDA, JAWS, VoiceOver)
 
 #### Performance
+
 - [ ] Add FPS counter toggle for debugging
 - [ ] Optimize render loop (only update on changes, not every frame)
 - [ ] Implement level-of-detail (LOD) for large graphs (> 100 nodes)
@@ -74,6 +76,7 @@
 - [ ] Lazy load Three.js library
 
 #### Error Handling
+
 - [ ] Better error messages when API key is missing
 - [ ] Handle network timeouts gracefully
 - [ ] Add retry button for failed analyses
@@ -85,6 +88,7 @@
 ### 3. Feature Enhancements
 
 #### Graph Visualization
+
 - [ ] Add minimap/overview in corner
 - [ ] Implement graph layout presets (circular, hierarchical, force-directed)
 - [ ] Add "fly-through" animation mode
@@ -92,6 +96,7 @@
 - [ ] Add time-series view if documents have timestamps
 
 #### Export & Sharing
+
 - [ ] Export graph as image (PNG/SVG)
 - [ ] Export analysis report as PDF
 - [ ] Export data as JSON/CSV
@@ -99,6 +104,7 @@
 - [ ] Add print-friendly view
 
 #### Analysis Features
+
 - [ ] Add sentiment analysis to documents
 - [ ] Implement topic modeling (LDA) as alternative to LLM
 - [ ] Add named entity recognition (people, places, organizations)
@@ -106,6 +112,7 @@
 - [ ] Add "bridge documents" detection (docs connecting disparate clusters)
 
 #### User Settings
+
 - [ ] Save user preferences to localStorage
 - [ ] Add theme switcher (light/dark mode)
 - [ ] Allow custom color schemes for nodes
@@ -163,6 +170,7 @@
 **Overall Progress:** 🟩🟩🟩⬜⬜⬜⬜⬜⬜⬜ 30%
 
 ### Completed ✅
+
 - [x] 3D graph visualization with Three.js
 - [x] OpenAI integration for analysis
 - [x] Force-directed layout algorithm
@@ -175,10 +183,12 @@
 - [x] Real-time processing progress
 
 ### In Progress 🔄
+
 - [ ] LLM prompt optimization
 - [ ] UI improvements
 
 ### Blocked 🚫
+
 - None currently
 
 ---

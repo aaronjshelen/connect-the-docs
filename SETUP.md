@@ -45,6 +45,7 @@ git push -u origin main
 ## 4. Verify Upload
 
 Visit your repository URL:
+
 ```
 https://github.com/YOUR_USERNAME/document-knowledge-graph
 ```
@@ -56,6 +57,7 @@ You should see all your files uploaded!
 ⚠️ **BEFORE using the app:**
 
 1. Copy `config.example.js` to `config.js`:
+
    ```bash
    cp config.example.js config.js
    ```
@@ -67,6 +69,7 @@ You should see all your files uploaded!
 ## 6. Optional: Add Topics to Repository
 
 On your GitHub repository page:
+
 1. Click the gear icon next to "About"
 2. Add topics: `3d-visualization`, `knowledge-graph`, `openai`, `threejs`, `react`, `ai`, `document-analysis`
 3. Add the website URL if you deploy it

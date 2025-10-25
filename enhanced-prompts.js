@@ -1,8 +1,8 @@
 /**
  * Enhanced Document Analysis Prompt System
- * 
+ *
  * This module provides sophisticated prompts for LLM-based document analysis
- * with focus on accurate theme identification, relationship detection, and 
+ * with focus on accurate theme identification, relationship detection, and
  * hierarchical organization of concepts.
  */
 
@@ -10,13 +10,13 @@ class DocumentAnalysisPrompts {
   constructor() {
     // Remove predefined categories - let LLM determine categories dynamically
     this.themeCategories = {};
-    
+
     this.definitionTypes = {
       technical: "Technical terms with precise meanings",
-      conceptual: "Abstract concepts or ideas", 
+      conceptual: "Abstract concepts or ideas",
       procedural: "Process or method definitions",
       categorical: "Classifications or categories",
-      quantitative: "Measurable quantities or metrics"
+      quantitative: "Measurable quantities or metrics",
     };
   }
 
@@ -31,7 +31,7 @@ class DocumentAnalysisPrompts {
       categorizeThemes = true,
       minThemeConfidence = 0.7,
       maxThemesPerDoc = 8,
-      includeSubthemes = true
+      includeSubthemes = true,
     } = analysisOptions;
 
     const prompt = `You are an expert document analyst specializing in identifying thematic relationships and conceptual structures across multiple documents.
@@ -44,10 +44,16 @@ Analyze the following ${documents.length} document(s) to extract:
 4. THEMATIC CATEGORIES and importance weights
 
 DOCUMENTS TO ANALYZE:
-${documents.map((doc, i) => 
-  `--- DOCUMENT ${i + 1}: "${doc.title}" ---
-${doc.content.slice(0, 4000)}${doc.content.length > 4000 ? '\n[Content truncated...]' : ''}
-`).join('\n')}
+${documents
+  .map(
+    (doc, i) =>
+      `--- DOCUMENT ${i + 1}: "${doc.title}" ---
+${doc.content.slice(0, 4000)}${
+        doc.content.length > 4000 ? "\n[Content truncated...]" : ""
+      }
+`
+  )
+  .join("\n")}
 
 EXTRACTION GUIDELINES:
 
@@ -65,7 +71,7 @@ EXTRACTION GUIDELINES:
 - Extract technical terms, key concepts, and specialized vocabulary
 - Include the EXACT definition as stated in the document
 - Provide surrounding context (1-2 sentences)
-- Categorize definition type: ${Object.keys(this.definitionTypes).join(', ')}
+- Categorize definition type: ${Object.keys(this.definitionTypes).join(", ")}
 - Mark definitions that appear across multiple documents
 
 🔗 RELATIONSHIP DETECTION:
@@ -169,7 +175,7 @@ Begin analysis now:`;
   generateThemeRefinementPrompt(extractedThemes, documentContent) {
     return `You are a theme analysis specialist. Review the following extracted themes and suggest improvements.
 
-EXTRACTED THEMES: ${extractedThemes.map(t => `"${t}"`).join(', ')}
+EXTRACTED THEMES: ${extractedThemes.map((t) => `"${t}"`).join(", ")}
 
 DOCUMENT CONTENT:
 ${documentContent.slice(0, 2000)}
@@ -206,12 +212,12 @@ Return JSON with refinement suggestions:
     return `Analyze the thematic relationships between these two documents:
 
 DOCUMENT 1: "${document1.title}"
-Themes: ${(document1.themes || []).join(', ')}
-Content excerpt: ${(document1.content || '').slice(0, 1500)}
+Themes: ${(document1.themes || []).join(", ")}
+Content excerpt: ${(document1.content || "").slice(0, 1500)}
 
 DOCUMENT 2: "${document2.title}"  
-Themes: ${(document2.themes || []).join(', ')}
-Content excerpt: ${(document2.content || '').slice(0, 1500)}
+Themes: ${(document2.themes || []).join(", ")}
+Content excerpt: ${(document2.content || "").slice(0, 1500)}
 
 FIND RELATIONSHIPS:
 1. EXACT MATCHES: Identical themes/concepts
@@ -284,9 +290,10 @@ Return JSON with definitions:
    * Generate document summarization prompt with thematic focus
    */
   generateSummaryPrompt(documentContent, extractedThemes = []) {
-    const themeContext = extractedThemes.length > 0 
-      ? `\nEXTRACTED THEMES: ${extractedThemes.join(', ')}`
-      : '';
+    const themeContext =
+      extractedThemes.length > 0
+        ? `\nEXTRACTED THEMES: ${extractedThemes.join(", ")}`
+        : "";
 
     return `Create a comprehensive summary of this document with focus on thematic content:
 
@@ -316,17 +323,23 @@ Return JSON summary:
    * Generate batch processing prompt for multiple documents
    */
   generateBatchAnalysisPrompt(documents, focusAreas = []) {
-    const focusSection = focusAreas.length > 0 
-      ? `\nSPECIAL FOCUS AREAS: ${focusAreas.join(', ')}`
-      : '';
+    const focusSection =
+      focusAreas.length > 0
+        ? `\nSPECIAL FOCUS AREAS: ${focusAreas.join(", ")}`
+        : "";
 
-    return `Perform batch analysis on ${documents.length} documents to identify cross-document patterns and relationships.
+    return `Perform batch analysis on ${
+      documents.length
+    } documents to identify cross-document patterns and relationships.
 
-${documents.map((doc, i) => 
-  `DOCUMENT ${i + 1}: "${doc.title}"
+${documents
+  .map(
+    (doc, i) =>
+      `DOCUMENT ${i + 1}: "${doc.title}"
 ${doc.content.slice(0, 2000)}
 ---`
-).join('\n')}${focusSection}
+  )
+  .join("\n")}${focusSection}
 
 BATCH ANALYSIS GOALS:
 1. Identify common themes across ALL documents
@@ -402,7 +415,9 @@ EXTRACTED DATA:
 ${JSON.stringify(extractedData, null, 2)}
 
 ORIGINAL DOCUMENTS:
-${originalDocuments.map((doc, i) => `${i + 1}. ${doc.title}: ${doc.content.slice(0, 1000)}`).join('\n---\n')}
+${originalDocuments
+  .map((doc, i) => `${i + 1}. ${doc.title}: ${doc.content.slice(0, 1000)}`)
+  .join("\n---\n")}
 
 VALIDATION TASKS:
 1. Verify themes are actually present in documents
@@ -429,8 +444,8 @@ Return validation report:
 }
 
 // Export for use in other modules
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.DocumentAnalysisPrompts = DocumentAnalysisPrompts;
-} else if (typeof module !== 'undefined') {
+} else if (typeof module !== "undefined") {
   module.exports = DocumentAnalysisPrompts;
 }
