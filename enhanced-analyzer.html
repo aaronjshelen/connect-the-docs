@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Enhanced Document Knowledge Graph Analyzer</title>
+    <title>c•nnect the d•cs</title>
     <script src="config.js"></script>
     <script src="theme-storage-system.js"></script>
     <script src="semantic-analyzer.js"></script>
@@ -20,6 +20,9 @@
     ></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
       * {
@@ -29,8 +32,8 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          sans-serif;
+        font-family: "Fira Code", "Monaco", "Cascadia Code", "Roboto Mono",
+          "Consolas", "Menlo", "Liberation Mono", "Courier New", monospace;
         background: #111827;
         color: white;
         overflow: hidden;
@@ -153,6 +156,7 @@
         cursor: pointer;
         transition: all 0.2s;
         color: #9ca3af;
+        font-family: "Fira Code", "Monaco", "Consolas", monospace;
       }
 
       .upload-button:hover {
@@ -169,6 +173,7 @@
         cursor: pointer;
         font-weight: 500;
         transition: background 0.2s;
+        font-family: "Fira Code", "Monaco", "Consolas", monospace;
       }
 
       .process-button:hover:not(:disabled) {
@@ -338,6 +343,7 @@
         cursor: pointer;
         font-size: 1rem;
         transition: background 0.2s;
+        font-family: "Fira Code", "Monaco", "Consolas", monospace;
       }
 
       .control-button:hover {
@@ -550,6 +556,7 @@
         outline: none;
         transition: all 0.2s;
         box-shadow: none;
+        font-family: "Fira Code", "Monaco", "Consolas", monospace;
       }
 
       .chat-input-overlay:focus {
@@ -687,6 +694,7 @@
         border-radius: 0.375rem;
         font-size: 0.875rem;
         margin-top: 0.5rem;
+        font-family: "Fira Code", "Monaco", "Consolas", monospace;
       }
 
       .chat-input:focus {
@@ -743,6 +751,13 @@
 
       input[type="file"] {
         display: none;
+      }
+
+      /* Ensure all inputs and buttons use monospace font */
+      input,
+      button,
+      textarea {
+        font-family: inherit;
       }
 
       /* Custom scrollbar styles */
@@ -811,13 +826,14 @@
           showSharedThemes: true,
           showUniqueThemes: true,
         });
-        
+
         // Label visibility state
         const [showLabels, setShowLabels] = useState(false);
-        
+
         // Highlighted nodes state (for AI-driven highlighting)
         const [highlightedNodeIds, setHighlightedNodeIds] = useState([]);
-        const [shouldFlashHighlighted, setShouldFlashHighlighted] = useState(false);
+        const [shouldFlashHighlighted, setShouldFlashHighlighted] =
+          useState(false);
 
         // Configuration state
         const [config, setConfig] = useState({
@@ -844,6 +860,7 @@
         const flashIntervalRef = useRef(null); // For flashing animation
         const hoveredNodeRef = useRef(null);
         const selectedNodeRef = useRef(null);
+        const tubeObjectsRef = useRef([]); // Store tube objects for focus highlighting
         const focusPointRef = useRef(new THREE.Vector3(0, 0, 0)); // Track orbital center
         const controlsRef = useRef({
           rotation: { x: 0, y: 0 },
@@ -911,6 +928,26 @@
             }, 300); // Match CSS transition duration
           }
         }, [sidebarVisible]);
+
+        // Keyboard shortcuts
+        useEffect(() => {
+          const handleKeyDown = (event) => {
+            // Space bar - reset view (only if not focused on an input)
+            if (
+              event.code === "Space" &&
+              event.target.tagName !== "INPUT" &&
+              event.target.tagName !== "TEXTAREA"
+            ) {
+              event.preventDefault();
+              resetCamera();
+            }
+          };
+
+          document.addEventListener("keydown", handleKeyDown);
+          return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+          };
+        }, []); // Empty dependency array since resetCamera is stable
 
         // Typewriter effect for chat messages
         useEffect(() => {
@@ -1028,7 +1065,7 @@
             debugInfo.unique
           );
         }, [filters, graphData]);
-        
+
         // Update label visibility when showLabels state changes
         useEffect(() => {
           showLabelsRef.current = showLabels; // Update ref for animate loop
@@ -1038,18 +1075,19 @@
             });
           }
         }, [showLabels]);
-        
+
         // Apply highlighted nodes styling
         useEffect(() => {
           if (!nodeObjectsRef.current || !graphData) return;
-          
+
           Object.values(nodeObjectsRef.current).forEach((mesh) => {
             const nodeData = mesh.userData.nodeData;
             if (!nodeData) return;
-            
-            const isHighlighted = highlightedNodeIds.length === 0 || 
-                                  highlightedNodeIds.includes(nodeData.id);
-            
+
+            const isHighlighted =
+              highlightedNodeIds.length === 0 ||
+              highlightedNodeIds.includes(nodeData.id);
+
             if (highlightedNodeIds.length > 0) {
               // Special highlighting mode active
               if (isHighlighted) {
@@ -1065,7 +1103,7 @@
             // Note: Regular filter logic in other useEffect will handle normal state
           });
         }, [highlightedNodeIds, graphData]);
-        
+
         // Handle flashing animation for multiple highlighted nodes
         useEffect(() => {
           // Clear any existing interval
@@ -1074,11 +1112,15 @@
             flashIntervalRef.current = null;
           }
 
-          if (shouldFlashHighlighted && highlightedNodeIds.length > 1 && nodeObjectsRef.current) {
+          if (
+            shouldFlashHighlighted &&
+            highlightedNodeIds.length > 1 &&
+            nodeObjectsRef.current
+          ) {
             let isRed = false;
-            
+
             flashIntervalRef.current = setInterval(() => {
-              highlightedNodeIds.forEach(nodeId => {
+              highlightedNodeIds.forEach((nodeId) => {
                 const mesh = nodeObjectsRef.current[nodeId];
                 if (mesh) {
                   if (isRed) {
@@ -1089,7 +1131,9 @@
                   } else {
                     // Return to original color
                     const nodeData = mesh.userData.nodeData;
-                    const originalColor = new THREE.Color(nodeData.color || "#60a5fa");
+                    const originalColor = new THREE.Color(
+                      nodeData.color || "#60a5fa"
+                    );
                     mesh.material.color.copy(originalColor);
                     mesh.material.emissive.copy(originalColor);
                     mesh.material.emissiveIntensity = 0.6;
@@ -1104,14 +1148,16 @@
             if (flashIntervalRef.current) {
               clearInterval(flashIntervalRef.current);
               flashIntervalRef.current = null;
-              
+
               // Restore original colors when stopping flash
               if (nodeObjectsRef.current && highlightedNodeIds.length > 0) {
-                highlightedNodeIds.forEach(nodeId => {
+                highlightedNodeIds.forEach((nodeId) => {
                   const mesh = nodeObjectsRef.current[nodeId];
                   if (mesh && mesh.userData.nodeData) {
                     const nodeData = mesh.userData.nodeData;
-                    const originalColor = new THREE.Color(nodeData.color || "#60a5fa");
+                    const originalColor = new THREE.Color(
+                      nodeData.color || "#60a5fa"
+                    );
                     mesh.material.color.copy(originalColor);
                     mesh.material.emissive.copy(originalColor);
                     mesh.material.emissiveIntensity = 0.6;
@@ -1121,7 +1167,102 @@
             }
           };
         }, [shouldFlashHighlighted, highlightedNodeIds]);
-        
+
+        // Handle focused node highlighting (only show selected node, its connections, and connected nodes)
+        useEffect(() => {
+          if (
+            !selectedNode ||
+            !nodeObjectsRef.current ||
+            !tubeObjectsRef.current ||
+            !graphData
+          )
+            return;
+
+          // Find connected node IDs
+          const connectedNodeIds = new Set();
+          connectedNodeIds.add(selectedNode.id); // Include the selected node itself
+
+          // Find all nodes connected to the selected node via links
+          if (graphData.links) {
+            graphData.links.forEach((link) => {
+              if (link.source === selectedNode.id) {
+                connectedNodeIds.add(link.target);
+              } else if (link.target === selectedNode.id) {
+                connectedNodeIds.add(link.source);
+              }
+            });
+          }
+
+          // Apply highlighting to nodes
+          Object.values(nodeObjectsRef.current).forEach((mesh) => {
+            const nodeData = mesh.userData.nodeData;
+            if (!nodeData) return;
+
+            const isConnected = connectedNodeIds.has(nodeData.id);
+            const isSelected = nodeData.id === selectedNode.id;
+
+            if (isSelected) {
+              // Selected node: fully bright with stronger emissive
+              mesh.material.opacity = 1.0;
+              mesh.material.transparent = false;
+              mesh.material.emissiveIntensity = 0.8;
+            } else if (isConnected) {
+              // Connected nodes: bright but less emissive than selected
+              mesh.material.opacity = 1.0;
+              mesh.material.transparent = false;
+              mesh.material.emissiveIntensity = 0.4;
+            } else {
+              // Unconnected nodes: heavily dimmed
+              mesh.material.opacity = 0.05;
+              mesh.material.transparent = true;
+              mesh.material.emissiveIntensity = 0.01;
+            }
+          });
+
+          // Apply highlighting to tubes/edges
+          tubeObjectsRef.current.forEach((tube) => {
+            const userData = tube.userData;
+            if (!userData) return;
+
+            const isConnectedTube =
+              userData.sourceId === selectedNode.id ||
+              userData.targetId === selectedNode.id;
+
+            if (isConnectedTube) {
+              // Connected edges: visible
+              tube.material.opacity = 0.8;
+              tube.material.transparent = true;
+            } else {
+              // Unconnected edges: heavily dimmed
+              tube.material.opacity = 0.02;
+              tube.material.transparent = true;
+            }
+          });
+        }, [selectedNode, graphData]);
+
+        // Clear focused highlighting when no node is selected
+        useEffect(() => {
+          if (
+            selectedNode ||
+            !nodeObjectsRef.current ||
+            !tubeObjectsRef.current
+          )
+            return;
+
+          // Restore all nodes to normal visibility (will be handled by filter logic)
+          Object.values(nodeObjectsRef.current).forEach((mesh) => {
+            mesh.material.opacity = 1.0;
+            mesh.material.transparent = false;
+            mesh.material.emissiveIntensity = 0.3;
+          });
+
+          // Restore all tubes to normal visibility
+          tubeObjectsRef.current.forEach((tube) => {
+            tube.material.opacity = 0.8;
+            tube.material.transparent = true;
+          });
+        }, [selectedNode]);
+
         // Initialize 3D graph when data is available
         useEffect(() => {
           if (graphData && mountRef.current) {
@@ -1139,51 +1280,199 @@
           ]);
         };
 
-        const handleFileUpload = (event) => {
-          const files = Array.from(event.target.files);
-          const filePromises = files.map((file) => {
-            return new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onload = (e) => {
+        // File parsing functions
+        const parseTextFile = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              resolve({
+                filename: file.name,
+                title: file.name.replace(/\.[^/.]+$/, ""),
+                content: e.target.result,
+                size: file.size,
+                type: "text",
+              });
+            };
+            reader.onerror = reject;
+            reader.readAsText(file);
+          });
+        };
+
+        const parseDocxFile = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              try {
+                const arrayBuffer = e.target.result;
+                const result = await mammoth.extractRawText({ arrayBuffer });
                 resolve({
                   filename: file.name,
                   title: file.name.replace(/\.[^/.]+$/, ""),
-                  content: e.target.result,
+                  content: result.value,
                   size: file.size,
+                  type: "docx",
                 });
-              };
-              reader.readAsText(file);
-            });
-          });
-
-          Promise.all(filePromises)
-            .then((loadedDocs) => {
-              // Validate loaded documents
-              const validDocs = loadedDocs.filter((doc) => {
-                if (!doc || !doc.title || !doc.content) {
-                  console.warn("Skipping invalid document:", doc);
-                  return false;
-                }
-                return true;
-              });
-
-              if (validDocs.length !== loadedDocs.length) {
-                addMessage(
-                  `Loaded ${validDocs.length} valid documents (${
-                    loadedDocs.length - validDocs.length
-                  } skipped due to errors)`,
-                  "info"
-                );
-              } else {
-                addMessage(`Loaded ${validDocs.length} document(s)`, "success");
+              } catch (error) {
+                reject(error);
               }
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+          });
+        };
 
-              setDocuments((prev) => [...prev, ...validDocs]);
-            })
-            .catch((error) => {
-              console.error("File loading error:", error);
-              addMessage(`Error loading files: ${error.message}`, "error");
+        const parseCsvFile = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              try {
+                const csvText = e.target.result;
+                const parsed = Papa.parse(csvText, { header: true });
+
+                // Convert CSV data to readable text format
+                let content = `CSV Data from ${file.name}\n\n`;
+
+                // Add headers
+                if (parsed.meta.fields) {
+                  content += `Columns: ${parsed.meta.fields.join(", ")}\n\n`;
+                }
+
+                // Add rows as text descriptions
+                parsed.data.forEach((row, idx) => {
+                  if (idx < 100) {
+                    // Limit to first 100 rows to avoid huge files
+                    content += `Row ${idx + 1}:\n`;
+                    Object.entries(row).forEach(([key, value]) => {
+                      if (value) content += `  ${key}: ${value}\n`;
+                    });
+                    content += "\n";
+                  }
+                });
+
+                if (parsed.data.length > 100) {
+                  content += `... and ${parsed.data.length - 100} more rows`;
+                }
+
+                resolve({
+                  filename: file.name,
+                  title: file.name.replace(/\.[^/.]+$/, ""),
+                  content: content,
+                  size: file.size,
+                  type: "csv",
+                  rowCount: parsed.data.length,
+                });
+              } catch (error) {
+                reject(error);
+              }
+            };
+            reader.onerror = reject;
+            reader.readAsText(file);
+          });
+        };
+
+        const parsePptxFile = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              try {
+                const arrayBuffer = e.target.result;
+                const zip = await JSZip.loadAsync(arrayBuffer);
+
+                let content = `PowerPoint Presentation: ${file.name}\n\n`;
+                let slideCount = 0;
+
+                // Extract text from slides
+                const slidePromises = [];
+                zip.folder("ppt/slides").forEach((relativePath, file) => {
+                  if (relativePath.endsWith(".xml")) {
+                    slidePromises.push(
+                      file.async("text").then((text) => {
+                        slideCount++;
+                        // Extract text from XML (simple regex approach)
+                        const textMatches = text.match(/<a:t>([^<]+)<\/a:t>/g);
+                        if (textMatches) {
+                          const slideText = textMatches
+                            .map((m) => m.replace(/<\/?a:t>/g, ""))
+                            .join(" ");
+                          return `Slide ${slideCount}:\n${slideText}\n\n`;
+                        }
+                        return "";
+                      })
+                    );
+                  }
+                });
+
+                const slideTexts = await Promise.all(slidePromises);
+                content += slideTexts.join("");
+
+                resolve({
+                  filename: file.name,
+                  title: file.name.replace(/\.[^/.]+$/, ""),
+                  content:
+                    content ||
+                    `PowerPoint presentation with ${slideCount} slides (text extraction failed)`,
+                  size: file.size,
+                  type: "pptx",
+                  slideCount: slideCount,
+                });
+              } catch (error) {
+                reject(error);
+              }
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+          });
+        };
+
+        const handleFileUpload = async (event) => {
+          const files = Array.from(event.target.files);
+
+          try {
+            const filePromises = files.map(async (file) => {
+              const ext = file.name.split(".").pop().toLowerCase();
+
+              switch (ext) {
+                case "txt":
+                  return await parseTextFile(file);
+                case "docx":
+                  return await parseDocxFile(file);
+                case "csv":
+                  return await parseCsvFile(file);
+                case "pptx":
+                case "ppt":
+                  return await parsePptxFile(file);
+                default:
+                  throw new Error(`Unsupported file type: ${ext}`);
+              }
             });
+
+            const loadedDocs = await Promise.all(filePromises);
+
+            // Validate loaded documents
+            const validDocs = loadedDocs.filter((doc) => {
+              if (!doc || !doc.title || !doc.content) {
+                console.warn("Skipping invalid document:", doc);
+                return false;
+              }
+              return true;
+            });
+
+            if (validDocs.length !== loadedDocs.length) {
+              addMessage(
+                `Loaded ${validDocs.length} valid documents (${
+                  loadedDocs.length - validDocs.length
+                } skipped due to errors)`,
+                "info"
+              );
+            } else {
+              addMessage(`Loaded ${validDocs.length} document(s)`, "success");
+            }
+
+            setDocuments((prev) => [...prev, ...validDocs]);
+          } catch (error) {
+            console.error("File loading error:", error);
+            addMessage(`Error loading files: ${error.message}`, "error");
+          }
         };
 
         const processDocuments = async () => {
@@ -1306,6 +1595,9 @@
           scene.background = new THREE.Color(0x0a0a0a);
           sceneRef.current = scene;
 
+          // Clear tube objects array
+          tubeObjectsRef.current = [];
+
           const camera = new THREE.PerspectiveCamera(
             75,
             mountRef.current.clientWidth / mountRef.current.clientHeight,
@@ -1382,7 +1674,8 @@
               canvas.height = 128;
 
               // Set font and measure text
-              context.font = "Bold 40px Arial";
+              context.font =
+                "Bold 40px 'Fira Code', 'Monaco', 'Consolas', monospace";
               const text = node.label || "Document";
               const metrics = context.measureText(text);
               const textWidth = metrics.width;
@@ -1408,12 +1701,12 @@
               );
 
               scene.add(sprite);
-              
+
               // Store sprite reference with base scale for dynamic scaling
               labelSpritesRef.current.push({
                 sprite: sprite,
                 baseScale: { x: 12, y: 3, z: 1 },
-                nodePosition: sprite.position
+                nodePosition: sprite.position,
               });
             }
 
@@ -1481,7 +1774,15 @@
                     });
 
                     const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+                    tube.userData = {
+                      sourceId: link.source,
+                      targetId: link.target,
+                      linkData: link,
+                    };
                     scene.add(tube);
+
+                    // Store tube reference for focus highlighting
+                    tubeObjectsRef.current.push(tube);
                     successfulLinks++;
 
                     if (i < 3) {
@@ -1545,10 +1846,9 @@
               }
 
               focusOnNode(nodeData); // Zoom in on clicked node
-            } else {
-              setSelectedNode(null);
-              setSelectedNodeDetails(null);
             }
+            // Note: No longer clearing selection when clicking elsewhere
+            // Selection only clears via spacebar or Reset View button
           };
 
           renderer.domElement.addEventListener("click", onMouseClick);
@@ -1565,7 +1865,7 @@
             if (controlsRef.current.autoRotate) {
               controlsRef.current.autoRotate = false;
             }
-            
+
             // Stop flashing when user interacts with graph
             setShouldFlashHighlighted(false);
           };
@@ -1708,22 +2008,27 @@
 
             // Update label scales based on camera distance and visibility
             if (labelSpritesRef.current) {
-              labelSpritesRef.current.forEach(({ sprite, baseScale, nodePosition }) => {
-                // Toggle visibility using ref
-                sprite.visible = showLabelsRef.current;
-                
-                if (showLabelsRef.current) {
-                  const distance = camera.position.distanceTo(nodePosition);
-                  // Scale factor based on distance: closer = smaller, farther = larger
-                  // Normalize around distance of 80 (initial camera distance)
-                  const scaleFactor = Math.max(0.5, Math.min(2.5, distance / 50));
-                  sprite.scale.set(
-                    baseScale.x * scaleFactor,
-                    baseScale.y * scaleFactor,
-                    baseScale.z
-                  );
+              labelSpritesRef.current.forEach(
+                ({ sprite, baseScale, nodePosition }) => {
+                  // Toggle visibility using ref
+                  sprite.visible = showLabelsRef.current;
+
+                  if (showLabelsRef.current) {
+                    const distance = camera.position.distanceTo(nodePosition);
+                    // Scale factor based on distance: closer = smaller, farther = larger
+                    // Normalize around distance of 80 (initial camera distance)
+                    const scaleFactor = Math.max(
+                      0.5,
+                      Math.min(2.5, distance / 50)
+                    );
+                    sprite.scale.set(
+                      baseScale.x * scaleFactor,
+                      baseScale.y * scaleFactor,
+                      baseScale.z
+                    );
+                  }
                 }
-              });
+              );
             }
 
             // Update node visual states for hover and selection
@@ -2367,13 +2672,32 @@
           return result;
         };
 
-        // Parse markdown bold syntax (**text** or __text__) to HTML
+        // Parse markdown syntax (bold, headers) to HTML
         const parseMarkdownBold = (text) => {
           if (!text) return text;
-          // Replace **text** with <strong>text</strong>
-          return text
-            .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-            .replace(/__([^_]+)__/g, "<strong>$1</strong>");
+          return (
+            text
+              // Replace ### headers with styled h3 elements
+              .replace(
+                /^### (.+)$/gm,
+                "<h3 style=\"color: #60a5fa; font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.5rem 0; border-bottom: 1px solid #374151; padding-bottom: 0.25rem; font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;\">$1</h3>"
+              )
+              // Replace ## headers with styled h2 elements
+              .replace(
+                /^## (.+)$/gm,
+                "<h2 style=\"color: #60a5fa; font-size: 1.2rem; font-weight: 600; margin: 1.2rem 0 0.6rem 0; border-bottom: 1px solid #374151; padding-bottom: 0.25rem; font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;\">$1</h2>"
+              )
+              // Replace # headers with styled h1 elements
+              .replace(
+                /^# (.+)$/gm,
+                "<h1 style=\"color: #60a5fa; font-size: 1.3rem; font-weight: 700; margin: 1.3rem 0 0.7rem 0; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;\">$1</h1>"
+              )
+              // Replace **text** with <strong>text</strong>
+              .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+              .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+              // Replace line breaks with <br> for proper formatting
+              .replace(/\n/g, "<br>")
+          );
         };
 
         const handleChatSubmit = async () => {
@@ -2388,22 +2712,28 @@
           let commandResponse = "";
 
           // Label control commands
-          if (lowerMessage.includes("turn off label") || 
-              lowerMessage.includes("hide label") ||
-              lowerMessage.includes("remove label")) {
+          if (
+            lowerMessage.includes("turn off label") ||
+            lowerMessage.includes("hide label") ||
+            lowerMessage.includes("remove label")
+          ) {
             setShowLabels(false);
             commandResponse = "✓ Document labels hidden.";
             commandHandled = true;
-          } else if (lowerMessage.includes("turn on label") || 
-                     lowerMessage.includes("show label") ||
-                     lowerMessage.includes("display label")) {
+          } else if (
+            lowerMessage.includes("turn on label") ||
+            lowerMessage.includes("show label") ||
+            lowerMessage.includes("display label")
+          ) {
             setShowLabels(true);
             commandResponse = "✓ Document labels shown.";
             commandHandled = true;
           }
           // Node filter commands
-          else if (lowerMessage.includes("highlight only document") || 
-                   lowerMessage.includes("show only document")) {
+          else if (
+            lowerMessage.includes("highlight only document") ||
+            lowerMessage.includes("show only document")
+          ) {
             setFilters({
               showDocuments: true,
               showSharedThemes: false,
@@ -2411,8 +2741,10 @@
             });
             commandResponse = "✓ Showing only document nodes.";
             commandHandled = true;
-          } else if (lowerMessage.includes("highlight connection") || 
-                     lowerMessage.includes("show connection")) {
+          } else if (
+            lowerMessage.includes("highlight connection") ||
+            lowerMessage.includes("show connection")
+          ) {
             setFilters({
               showDocuments: true,
               showSharedThemes: true,
@@ -2420,8 +2752,10 @@
             });
             commandResponse = "✓ Showing all nodes and connections.";
             commandHandled = true;
-          } else if (lowerMessage.includes("show shared theme") || 
-                     lowerMessage.includes("highlight shared theme")) {
+          } else if (
+            lowerMessage.includes("show shared theme") ||
+            lowerMessage.includes("highlight shared theme")
+          ) {
             setFilters({
               showDocuments: true,
               showSharedThemes: true,
@@ -2429,8 +2763,10 @@
             });
             commandResponse = "✓ Showing documents and shared themes.";
             commandHandled = true;
-          } else if (lowerMessage.includes("show unique theme") || 
-                     lowerMessage.includes("highlight unique theme")) {
+          } else if (
+            lowerMessage.includes("show unique theme") ||
+            lowerMessage.includes("highlight unique theme")
+          ) {
             setFilters({
               showDocuments: true,
               showSharedThemes: false,
@@ -2438,9 +2774,11 @@
             });
             commandResponse = "✓ Showing documents and unique themes.";
             commandHandled = true;
-          } else if (lowerMessage.includes("show all") || 
-                     lowerMessage.includes("reset filter") ||
-                     lowerMessage.includes("show everything")) {
+          } else if (
+            lowerMessage.includes("show all") ||
+            lowerMessage.includes("reset filter") ||
+            lowerMessage.includes("show everything")
+          ) {
             setFilters({
               showDocuments: true,
               showSharedThemes: true,
@@ -2462,30 +2800,39 @@
           }
 
           // Check for content-based highlighting queries
-          const isHighlightQuery = 
-            (lowerMessage.includes("which document") || 
-             lowerMessage.includes("what document") ||
-             lowerMessage.includes("highlight document")) &&
-            (lowerMessage.includes("about") || 
-             lowerMessage.includes("mention") ||
-             lowerMessage.includes("talk") ||
-             lowerMessage.includes("discuss") ||
-             lowerMessage.includes("contain"));
+          const isHighlightQuery =
+            (lowerMessage.includes("which document") ||
+              lowerMessage.includes("what document") ||
+              lowerMessage.includes("highlight document")) &&
+            (lowerMessage.includes("about") ||
+              lowerMessage.includes("mention") ||
+              lowerMessage.includes("talk") ||
+              lowerMessage.includes("discuss") ||
+              lowerMessage.includes("contain"));
 
           if (isHighlightQuery && documents.length > 0) {
             // Add user message and thinking indicator
             setChatHistory((prev) => [
               ...prev,
               { role: "user", content: userMessage },
-              { role: "assistant", content: "Analyzing documents...", isThinking: true },
+              {
+                role: "assistant",
+                content: "Analyzing documents...",
+                isThinking: true,
+              },
             ]);
             setLoading(true);
 
             try {
               // Create a focused prompt to identify relevant documents
-              const documentList = documents.map((doc, idx) => 
-                `${idx + 1}. "${doc.title}" (ID: ${doc.filename})\nContent: ${doc.content.slice(0, 800)}...`
-              ).join("\n\n");
+              const documentList = documents
+                .map(
+                  (doc, idx) =>
+                    `${idx + 1}. "${doc.title}" (ID: ${
+                      doc.filename
+                    })\nContent: ${doc.content.slice(0, 800)}...`
+                )
+                .join("\n\n");
 
               const highlightPrompt = `Based on this user query: "${userMessage}"
 
@@ -2520,7 +2867,8 @@ Example response format:
                     messages: [
                       {
                         role: "system",
-                        content: "You are a document analysis assistant. Return only valid JSON.",
+                        content:
+                          "You are a document analysis assistant. Return only valid JSON.",
                       },
                       { role: "user", content: highlightPrompt },
                     ],
@@ -2531,18 +2879,20 @@ Example response format:
               );
 
               const data = await response.json();
-              if (!response.ok) throw new Error(data.error?.message || "API request failed");
+              if (!response.ok)
+                throw new Error(data.error?.message || "API request failed");
 
               const aiResponse = data.choices?.[0]?.message?.content || "{}";
-              
+
               // Parse JSON response
               let result;
               try {
                 result = JSON.parse(aiResponse);
               } catch (e) {
                 // If JSON parsing fails, try to extract from markdown code blocks
-                const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/) || 
-                                 aiResponse.match(/```\s*([\s\S]*?)\s*```/);
+                const jsonMatch =
+                  aiResponse.match(/```json\s*([\s\S]*?)\s*```/) ||
+                  aiResponse.match(/```\s*([\s\S]*?)\s*```/);
                 if (jsonMatch) {
                   result = JSON.parse(jsonMatch[1]);
                 } else {
@@ -2551,29 +2901,35 @@ Example response format:
               }
 
               const matchedTitles = result.documentTitles || [];
-              const explanation = result.explanation || "No matching documents found.";
+              const explanation =
+                result.explanation || "No matching documents found.";
 
               console.log("AI returned titles:", matchedTitles);
-              console.log("Available nodes:", graphData?.nodes?.map(n => ({type: n.type, label: n.label})));
+              console.log(
+                "Available nodes:",
+                graphData?.nodes?.map((n) => ({ type: n.type, label: n.label }))
+              );
 
               // Find matching document nodes and highlight them (with flexible matching)
               const matchedNodeIds = [];
               const matchedNodes = [];
               if (graphData && graphData.nodes) {
-                matchedTitles.forEach(aiTitle => {
-                  const node = graphData.nodes.find(n => {
+                matchedTitles.forEach((aiTitle) => {
+                  const node = graphData.nodes.find((n) => {
                     if (n.type !== "document") return false;
-                    
+
                     const nodeLabel = n.label || n.data?.title || "";
                     const aiTitleNorm = aiTitle.toLowerCase().trim();
                     const nodeLabelNorm = nodeLabel.toLowerCase().trim();
-                    
+
                     // Try exact match, partial match, or if AI title contains node label
-                    return nodeLabelNorm === aiTitleNorm || 
-                           nodeLabelNorm.includes(aiTitleNorm) ||
-                           aiTitleNorm.includes(nodeLabelNorm);
+                    return (
+                      nodeLabelNorm === aiTitleNorm ||
+                      nodeLabelNorm.includes(aiTitleNorm) ||
+                      aiTitleNorm.includes(nodeLabelNorm)
+                    );
                   });
-                  
+
                   if (node) {
                     console.log(`Matched "${aiTitle}" to node "${node.label}"`);
                     matchedNodeIds.push(node.id);
@@ -2583,7 +2939,7 @@ Example response format:
                   }
                 });
               }
-              
+
               console.log("Matched nodes:", matchedNodes.length);
 
               // Apply highlighting
@@ -2620,7 +2976,6 @@ Example response format:
                 setTypingMessageIndex(newHistory.length - 1);
                 return newHistory;
               });
-
             } catch (error) {
               console.error("Highlight query error:", error);
               setChatHistory((prev) => {
@@ -2640,14 +2995,20 @@ Example response format:
           }
 
           // Reset highlighting command
-          if (lowerMessage.includes("reset highlight") || 
-              lowerMessage.includes("clear highlight") ||
-              lowerMessage.includes("remove highlight")) {
+          if (
+            lowerMessage.includes("reset highlight") ||
+            lowerMessage.includes("clear highlight") ||
+            lowerMessage.includes("remove highlight")
+          ) {
             setHighlightedNodeIds([]);
             setChatHistory((prev) => [
               ...prev,
               { role: "user", content: userMessage },
-              { role: "assistant", content: "✓ Highlighting cleared. All nodes restored to normal view." },
+              {
+                role: "assistant",
+                content:
+                  "✓ Highlighting cleared. All nodes restored to normal view.",
+              },
             ]);
             return;
           }
@@ -2903,13 +3264,13 @@ Answer the question thoroughly but efficiently.`;
 
           // Clear selected node
           setSelectedNode(null);
-          
+
           // Clear highlighted nodes (undim all nodes)
           setHighlightedNodeIds([]);
-          
+
           // Stop any flashing animation
           setShouldFlashHighlighted(false);
-          
+
           // Restore all nodes to full visibility if they were dimmed
           if (nodeObjectsRef.current) {
             Object.values(nodeObjectsRef.current).forEach((mesh) => {
@@ -2917,7 +3278,9 @@ Answer the question thoroughly but efficiently.`;
               mesh.material.transparent = false;
               const nodeData = mesh.userData.nodeData;
               if (nodeData) {
-                const originalColor = new THREE.Color(nodeData.color || "#60a5fa");
+                const originalColor = new THREE.Color(
+                  nodeData.color || "#60a5fa"
+                );
                 mesh.material.color.copy(originalColor);
                 mesh.material.emissive.copy(originalColor);
                 mesh.material.emissiveIntensity = 0.3;
@@ -2953,8 +3316,7 @@ Answer the question thoroughly but efficiently.`;
           <div className="container">
             <div className="header">
               <div className="header-title">
-                <h1>Enhanced Document Knowledge Graph Analyzer</h1>
-                <span className="badge">Enhanced</span>
+                <h1>c•nnect the d•cs</h1>
               </div>
               <div style={{ fontSize: "0.875rem", color: "#9ca3af" }}>
                 {documents.length} documents loaded
@@ -2986,14 +3348,14 @@ Answer the question thoroughly but efficiently.`;
                       <div>📄</div>
                       <div>Drop files here or click to browse</div>
                       <div style={{ fontSize: "0.75rem", marginTop: "0.5rem" }}>
-                        Supports .txt files
+                        Supports .txt, .docx, .csv, .pptx files
                       </div>
                     </div>
                     <input
                       ref={fileInputRef}
                       type="file"
                       multiple
-                      accept=".txt"
+                      accept=".txt,.docx,.csv,.pptx,.ppt"
                       onChange={handleFileUpload}
                     />
                     <button
@@ -3079,9 +3441,7 @@ Answer the question thoroughly but efficiently.`;
                         checked={showLabels}
                         onChange={(e) => setShowLabels(e.target.checked)}
                       />
-                      <label htmlFor="toggle-labels">
-                        🏷️ Document Labels
-                      </label>
+                      <label htmlFor="toggle-labels">🏷️ Document Labels</label>
                     </div>
                   </div>
                 </div>
@@ -3105,7 +3465,7 @@ Answer the question thoroughly but efficiently.`;
                         fontSize: "1rem",
                       }}
                     >
-                      🏠 Reset View
+                      Reset View
                     </button>
                     <button
                       className="control-button"
@@ -3117,39 +3477,8 @@ Answer the question thoroughly but efficiently.`;
                         fontSize: "1rem",
                       }}
                     >
-                      🔄 Toggle Rotation
+                      Toggle Rotation
                     </button>
-                  </div>
-                </div>
-
-                <div className="sidebar-section">
-                  <h3>Search Graph</h3>
-                  <div className="chat-section">
-                    <input
-                      type="text"
-                      className="chat-input"
-                      placeholder="Search for documents or themes..."
-                      value={searchQuery}
-                      onChange={(e) => handleSearch(e.target.value)}
-                    />
-                    {searchResults.length > 0 && (
-                      <div className="search-results">
-                        {searchResults.map((result, idx) => (
-                          <div
-                            key={idx}
-                            className="search-result-item"
-                            onClick={() => handleSearchSelect(result.id)}
-                          >
-                            <strong>{result.label}</strong>
-                            <div
-                              style={{ fontSize: "0.75rem", color: "#9ca3af" }}
-                            >
-                              {result.type}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -3434,7 +3763,7 @@ Answer the question thoroughly but efficiently.`;
                     }}
                   >
                     <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
-                      📊
+                      •
                     </div>
                     <div>
                       Upload documents and click "Analyze Documents" to see the

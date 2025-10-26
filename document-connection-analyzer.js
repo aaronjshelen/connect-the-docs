@@ -608,16 +608,16 @@ class DocumentConnectionAnalyzer {
     const colors = {
       document: "#4F46E5",
       "shared-theme": {
-        conceptual: "#EF4444",
-        methodological: "#F59E0B",
-        technological: "#10B981",
-        environmental: "#059669",
-        economic: "#DC2626",
-        social: "#7C3AED",
-        regulatory: "#B45309",
-        general: "#6B7280",
+        conceptual: "#FBBF24",
+        methodological: "#FBBF24",
+        technological: "#FBBF24",
+        environmental: "#FBBF24",
+        economic: "#FBBF24",
+        social: "#FBBF24",
+        regulatory: "#FBBF24",
+        general: "#FBBF24",
       },
-      "unique-theme": "#94A3B8",
+      "unique-theme": "#6B7280",
       definition: "#F472B6",
     };
 
