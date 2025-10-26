@@ -81,8 +81,9 @@
       .sidebar {
         width: 350px;
         min-width: 350px;
-        background: #1f2937;
-        border-right: 1px solid #374151;
+        background: rgba(31, 41, 55, 0.7);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(55, 65, 81, 0.5);
         display: flex;
         flex-direction: column;
         overflow-y: auto;
@@ -225,6 +226,55 @@
         color: #9ca3af;
       }
 
+      .filter-section {
+        margin-bottom: 1.5rem;
+        background: #374151;
+        padding: 1rem;
+        border-radius: 0.5rem;
+      }
+
+      .filter-section h4 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #f3f4f6;
+      }
+
+      .filter-checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .filter-checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        transition: background 0.2s;
+        cursor: pointer;
+      }
+
+      .filter-checkbox-item:hover {
+        background: rgba(75, 85, 99, 0.5);
+      }
+
+      .filter-checkbox-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #60a5fa;
+      }
+
+      .filter-checkbox-item label {
+        font-size: 0.875rem;
+        color: #e5e7eb;
+        cursor: pointer;
+        user-select: none;
+        flex: 1;
+      }
+
       .theme-list {
         max-height: 200px;
         overflow-y: auto;
@@ -302,12 +352,12 @@
         position: absolute;
         top: 1rem;
         right: 1rem;
-        background: rgba(31, 41, 55, 0.95);
+        background: rgba(31, 41, 55, 0.3);
         padding: 1.25rem;
         border-radius: 0.75rem;
         backdrop-filter: blur(12px);
-        border: 1px solid #374151;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(55, 65, 81, 0.3);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         z-index: 10;
         overflow: hidden;
       }
@@ -463,7 +513,12 @@
         width: 55%;
         max-width: 650px;
         z-index: 20;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        border: 1px solid rgba(156, 163, 175, 0.3);
+        border-radius: 0.5rem;
       }
 
       .chat-overlay-centered {
@@ -471,12 +526,9 @@
         transform: translateX(-50%);
       }
 
-      .chat-overlay-collapsed {
-        max-height: 60px;
-      }
-
       .chat-overlay-expanded {
-        max-height: 500px;
+        max-height: 60vh;
+        overflow: hidden;
       }
 
       .chat-header {
@@ -488,21 +540,21 @@
 
       .chat-input-overlay {
         width: 100%;
-        background: rgba(31, 41, 55, 0.5);
+        background: rgba(31, 41, 55, 0.2);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(75, 85, 99, 0.3);
+        border: 1px solid rgba(156, 163, 175, 0.3);
         padding: 0.75rem;
         border-radius: 0.5rem;
         color: #f9fafb;
         font-size: 0.875rem;
         outline: none;
         transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        box-shadow: none;
       }
 
       .chat-input-overlay:focus {
-        background: rgba(31, 41, 55, 0.7);
-        border-color: rgba(96, 165, 250, 0.4);
+        background: rgba(31, 41, 55, 0.3);
+        border: 1px solid rgba(156, 163, 175, 0.5);
       }
 
       .typing-cursor {
@@ -524,9 +576,12 @@
       }
 
       .chat-messages {
-        max-height: 400px;
+        max-height: 50vh;
         overflow-y: auto;
-        padding: 0.75rem 0 0 0;
+        overflow-x: hidden;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
       }
 
       .chat-message {
@@ -535,21 +590,21 @@
         border-radius: 0.5rem;
         font-size: 0.875rem;
         line-height: 1.6;
-        background: rgba(31, 41, 55, 0.5);
+        background: rgba(31, 41, 55, 0.15);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(75, 85, 99, 0.3);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(156, 163, 175, 0.3);
+        box-shadow: none;
         white-space: pre-wrap;
       }
 
       .chat-message-user {
-        background: rgba(31, 41, 55, 0.6);
-        border-left: 3px solid rgba(156, 163, 175, 0.5);
+        background: rgba(31, 41, 55, 0.15);
+        border-left: 1px solid rgba(156, 163, 175, 0.3);
       }
 
       .chat-message-assistant {
-        background: rgba(31, 41, 55, 0.6);
-        border-left: 3px solid rgba(156, 163, 175, 0.5);
+        background: rgba(31, 41, 55, 0.15);
+        border-left: 1px solid rgba(156, 163, 175, 0.3);
       }
 
       .progress-bar {
@@ -750,6 +805,20 @@
         const [selectedNodeDetails, setSelectedNodeDetails] = useState(null);
         const [typingNodeText, setTypingNodeText] = useState("");
 
+        // Filter state
+        const [filters, setFilters] = useState({
+          showDocuments: true,
+          showSharedThemes: true,
+          showUniqueThemes: true,
+        });
+        
+        // Label visibility state
+        const [showLabels, setShowLabels] = useState(false);
+        
+        // Highlighted nodes state (for AI-driven highlighting)
+        const [highlightedNodeIds, setHighlightedNodeIds] = useState([]);
+        const [shouldFlashHighlighted, setShouldFlashHighlighted] = useState(false);
+
         // Configuration state
         const [config, setConfig] = useState({
           minThemeConfidence: 0.7,
@@ -765,10 +834,14 @@
         const analyzerRef = useRef(null);
         const fileInputRef = useRef(null);
         const chatOverlayRef = useRef(null);
+        const chatMessagesRef = useRef(null);
         const sceneRef = useRef(null);
         const cameraRef = useRef(null);
         const rendererRef = useRef(null);
         const nodeObjectsRef = useRef({});
+        const labelSpritesRef = useRef([]);
+        const showLabelsRef = useRef(false); // Ref for animate loop access
+        const flashIntervalRef = useRef(null); // For flashing animation
         const hoveredNodeRef = useRef(null);
         const selectedNodeRef = useRef(null);
         const focusPointRef = useRef(new THREE.Vector3(0, 0, 0)); // Track orbital center
@@ -857,7 +930,7 @@
                 clearInterval(typingInterval);
                 setTypingMessageIndex(null);
               }
-            }, 20); // 20ms per character
+            }, 10); // 10ms per character (faster)
 
             return () => clearInterval(typingInterval);
           }
@@ -876,7 +949,7 @@
               } else {
                 clearInterval(typingInterval);
               }
-            }, 15); // 15ms per character for info box
+            }, 8); // 8ms per character for info box (faster)
 
             return () => clearInterval(typingInterval);
           } else {
@@ -884,6 +957,171 @@
           }
         }, [selectedNodeDetails]);
 
+        // Auto-scroll to bottom when new messages arrive
+        useEffect(() => {
+          if (
+            chatMessagesRef.current &&
+            chatExpanded &&
+            chatHistory.length > 0
+          ) {
+            chatMessagesRef.current.scrollTop =
+              chatMessagesRef.current.scrollHeight;
+          }
+        }, [chatHistory, displayedText, chatExpanded]);
+
+        // Apply filters to graph nodes
+        // Apply filters to graph nodes
+        useEffect(() => {
+          if (!graphData || !nodeObjectsRef.current) return;
+
+          console.log("Applying filters:", filters);
+          const nodeTypeCounts = {};
+          const debugInfo = { shared: 0, unique: 0, documents: 0 };
+
+          Object.values(nodeObjectsRef.current).forEach((mesh) => {
+            const nodeData = mesh.userData.nodeData;
+            if (!nodeData) return;
+
+            let shouldHighlight = false;
+            const nodeType = nodeData.type || "unknown";
+
+            // Count node types for debugging
+            nodeTypeCounts[nodeType] = (nodeTypeCounts[nodeType] || 0) + 1;
+
+            // Document nodes (lowercase "document")
+            if (nodeType === "document") {
+              shouldHighlight = filters.showDocuments;
+              debugInfo.documents++;
+            }
+            // Shared theme nodes (lowercase "shared-theme")
+            else if (nodeType === "shared-theme") {
+              shouldHighlight = filters.showSharedThemes;
+              debugInfo.shared++;
+            }
+            // Unique theme nodes (lowercase "unique-theme")
+            else if (nodeType === "unique-theme") {
+              shouldHighlight = filters.showUniqueThemes;
+              debugInfo.unique++;
+            }
+
+            // Apply visual changes
+            if (shouldHighlight) {
+              // Highlighted: full opacity and normal emissive
+              mesh.material.opacity = 1.0;
+              mesh.material.transparent = false;
+              mesh.material.emissiveIntensity = 0.3;
+            } else {
+              // Dimmed: reduced opacity
+              mesh.material.opacity = 0.15;
+              mesh.material.transparent = true;
+              mesh.material.emissiveIntensity = 0.05;
+            }
+          });
+
+          console.log("Node type counts:", nodeTypeCounts);
+          console.log(
+            "Filter results - Documents:",
+            debugInfo.documents,
+            "Shared themes:",
+            debugInfo.shared,
+            "Unique themes:",
+            debugInfo.unique
+          );
+        }, [filters, graphData]);
+        
+        // Update label visibility when showLabels state changes
+        useEffect(() => {
+          showLabelsRef.current = showLabels; // Update ref for animate loop
+          if (labelSpritesRef.current && labelSpritesRef.current.length > 0) {
+            labelSpritesRef.current.forEach(({ sprite }) => {
+              sprite.visible = showLabels;
+            });
+          }
+        }, [showLabels]);
+        
+        // Apply highlighted nodes styling
+        useEffect(() => {
+          if (!nodeObjectsRef.current || !graphData) return;
+          
+          Object.values(nodeObjectsRef.current).forEach((mesh) => {
+            const nodeData = mesh.userData.nodeData;
+            if (!nodeData) return;
+            
+            const isHighlighted = highlightedNodeIds.length === 0 || 
+                                  highlightedNodeIds.includes(nodeData.id);
+            
+            if (highlightedNodeIds.length > 0) {
+              // Special highlighting mode active
+              if (isHighlighted) {
+                mesh.material.opacity = 1.0;
+                mesh.material.transparent = false;
+                mesh.material.emissiveIntensity = 0.6;
+              } else {
+                mesh.material.opacity = 0.1;
+                mesh.material.transparent = true;
+                mesh.material.emissiveIntensity = 0.02;
+              }
+            }
+            // Note: Regular filter logic in other useEffect will handle normal state
+          });
+        }, [highlightedNodeIds, graphData]);
+        
+        // Handle flashing animation for multiple highlighted nodes
+        useEffect(() => {
+          // Clear any existing interval
+          if (flashIntervalRef.current) {
+            clearInterval(flashIntervalRef.current);
+            flashIntervalRef.current = null;
+          }
+
+          if (shouldFlashHighlighted && highlightedNodeIds.length > 1 && nodeObjectsRef.current) {
+            let isRed = false;
+            
+            flashIntervalRef.current = setInterval(() => {
+              highlightedNodeIds.forEach(nodeId => {
+                const mesh = nodeObjectsRef.current[nodeId];
+                if (mesh) {
+                  if (isRed) {
+                    // Flash to bright red
+                    mesh.material.color.setHex(0xff0000);
+                    mesh.material.emissive.setHex(0xff0000);
+                    mesh.material.emissiveIntensity = 1.0;
+                  } else {
+                    // Return to original color
+                    const nodeData = mesh.userData.nodeData;
+                    const originalColor = new THREE.Color(nodeData.color || "#60a5fa");
+                    mesh.material.color.copy(originalColor);
+                    mesh.material.emissive.copy(originalColor);
+                    mesh.material.emissiveIntensity = 0.6;
+                  }
+                }
+              });
+              isRed = !isRed;
+            }, 500); // Flash every 0.5 seconds
+          }
+
+          return () => {
+            if (flashIntervalRef.current) {
+              clearInterval(flashIntervalRef.current);
+              flashIntervalRef.current = null;
+              
+              // Restore original colors when stopping flash
+              if (nodeObjectsRef.current && highlightedNodeIds.length > 0) {
+                highlightedNodeIds.forEach(nodeId => {
+                  const mesh = nodeObjectsRef.current[nodeId];
+                  if (mesh && mesh.userData.nodeData) {
+                    const nodeData = mesh.userData.nodeData;
+                    const originalColor = new THREE.Color(nodeData.color || "#60a5fa");
+                    mesh.material.color.copy(originalColor);
+                    mesh.material.emissive.copy(originalColor);
+                    mesh.material.emissiveIntensity = 0.6;
+                  }
+                });
+              }
+            }
+          };
+        }, [shouldFlashHighlighted, highlightedNodeIds]);
+        
         // Initialize 3D graph when data is available
         useEffect(() => {
           if (graphData && mountRef.current) {
@@ -1108,6 +1346,7 @@
 
           // Create nodes
           const nodeObjects = {};
+          labelSpritesRef.current = []; // Store label sprites for dynamic scaling
 
           console.log("Creating node meshes...");
           graphData.nodes.forEach((node, i) => {
@@ -1134,6 +1373,49 @@
 
             scene.add(mesh);
             nodeObjects[node.id] = mesh;
+
+            // Add text label for document nodes
+            if (node.type === "document") {
+              const canvas = document.createElement("canvas");
+              const context = canvas.getContext("2d");
+              canvas.width = 512;
+              canvas.height = 128;
+
+              // Set font and measure text
+              context.font = "Bold 40px Arial";
+              const text = node.label || "Document";
+              const metrics = context.measureText(text);
+              const textWidth = metrics.width;
+
+              // Clear and draw text
+              context.clearRect(0, 0, canvas.width, canvas.height);
+              context.fillStyle = "rgba(255, 255, 255, 0.95)";
+              context.fillText(text, (canvas.width - textWidth) / 2, 80);
+
+              // Create sprite with smaller base scale
+              const texture = new THREE.CanvasTexture(canvas);
+              const spriteMaterial = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+              });
+              const sprite = new THREE.Sprite(spriteMaterial);
+              sprite.scale.set(12, 3, 1); // Reduced from 20,5 to 12,3
+              sprite.visible = false; // Start hidden (default showLabels is false)
+              sprite.position.set(
+                node.x / 10 + size * 2,
+                node.y / 10,
+                node.z / 10
+              );
+
+              scene.add(sprite);
+              
+              // Store sprite reference with base scale for dynamic scaling
+              labelSpritesRef.current.push({
+                sprite: sprite,
+                baseScale: { x: 12, y: 3, z: 1 },
+                nodePosition: sprite.position
+              });
+            }
 
             console.log(`Added mesh for node ${i}: ${node.label}`);
           });
@@ -1283,6 +1565,9 @@
             if (controlsRef.current.autoRotate) {
               controlsRef.current.autoRotate = false;
             }
+            
+            // Stop flashing when user interacts with graph
+            setShouldFlashHighlighted(false);
           };
 
           const onMouseMove = (event) => {
@@ -1419,6 +1704,26 @@
                 focusPoint.z +
                 distance * Math.cos(controlsRef.current.rotation.y);
               camera.lookAt(focusPoint);
+            }
+
+            // Update label scales based on camera distance and visibility
+            if (labelSpritesRef.current) {
+              labelSpritesRef.current.forEach(({ sprite, baseScale, nodePosition }) => {
+                // Toggle visibility using ref
+                sprite.visible = showLabelsRef.current;
+                
+                if (showLabelsRef.current) {
+                  const distance = camera.position.distanceTo(nodePosition);
+                  // Scale factor based on distance: closer = smaller, farther = larger
+                  // Normalize around distance of 80 (initial camera distance)
+                  const scaleFactor = Math.max(0.5, Math.min(2.5, distance / 50));
+                  sprite.scale.set(
+                    baseScale.x * scaleFactor,
+                    baseScale.y * scaleFactor,
+                    baseScale.z
+                  );
+                }
+              });
             }
 
             // Update node visual states for hover and selection
@@ -1655,6 +1960,144 @@
         const getNodeDetails = (node) => {
           if (!node) return null;
 
+          // Handle THEME and SHARED_THEME nodes differently
+          if (node.type === "THEME" || node.type === "SHARED_THEME") {
+            const connectedDocuments = [];
+            const relatedThemes = [];
+            const themeQuotes = [];
+
+            // Find all documents connected to this theme
+            if (graphData && graphData.links) {
+              graphData.links.forEach((link) => {
+                const sourceNode = graphData.nodes.find(
+                  (n) => n.id === link.source
+                );
+                const targetNode = graphData.nodes.find(
+                  (n) => n.id === link.target
+                );
+
+                // Check if this link connects to our theme node
+                if (sourceNode && targetNode) {
+                  if (
+                    sourceNode.id === node.id &&
+                    targetNode.type === "DOCUMENT"
+                  ) {
+                    connectedDocuments.push(targetNode.label);
+                  } else if (
+                    targetNode.id === node.id &&
+                    sourceNode.type === "DOCUMENT"
+                  ) {
+                    connectedDocuments.push(sourceNode.label);
+                  }
+                  // Find related themes (other themes connected to same documents)
+                  else if (
+                    (sourceNode.id === node.id &&
+                      (targetNode.type === "THEME" ||
+                        targetNode.type === "SHARED_THEME")) ||
+                    (targetNode.id === node.id &&
+                      (sourceNode.type === "THEME" ||
+                        sourceNode.type === "SHARED_THEME"))
+                  ) {
+                    const otherTheme =
+                      sourceNode.id === node.id ? targetNode : sourceNode;
+                    if (!relatedThemes.includes(otherTheme.label)) {
+                      relatedThemes.push(otherTheme.label);
+                    }
+                  }
+                }
+              });
+            }
+
+            // Extract quotes related to this theme from connected documents
+            connectedDocuments.forEach((docTitle) => {
+              const doc = documents.find(
+                (d) => d.title === docTitle || d.filename === docTitle
+              );
+              if (doc && doc.content) {
+                // Search for sentences containing theme-related keywords
+                const themeKeywords = node.label
+                  .toLowerCase()
+                  .split(/[\s,]+/)
+                  .filter((w) => w.length > 3);
+                const sentences = doc.content.match(/[^.!?]+[.!?]+/g) || [];
+
+                sentences.forEach((sentence) => {
+                  const lowerSentence = sentence.toLowerCase();
+                  // Check if sentence contains any theme keyword
+                  const matchCount = themeKeywords.filter((keyword) =>
+                    lowerSentence.includes(keyword)
+                  ).length;
+
+                  if (
+                    matchCount > 0 &&
+                    sentence.trim().length > 40 &&
+                    sentence.trim().length < 300
+                  ) {
+                    themeQuotes.push({
+                      text: sentence.trim(),
+                      source: docTitle,
+                      relevance: matchCount,
+                    });
+                  }
+                });
+              }
+            });
+
+            // Sort by relevance and take top quotes
+            themeQuotes.sort((a, b) => b.relevance - a.relevance);
+            const topQuotes = themeQuotes.slice(0, 5);
+
+            // Create a detailed summary for the theme
+            let themeSummary = "";
+
+            if (node.type === "SHARED_THEME") {
+              themeSummary = `Shared Theme Analysis\n\n`;
+              themeSummary += `The theme "${
+                node.label
+              }" is a shared concept that appears across ${
+                connectedDocuments.length
+              } document${
+                connectedDocuments.length !== 1 ? "s" : ""
+              }: ${connectedDocuments.join(", ")}.\n\n`;
+              themeSummary += `Why This Theme is Shared:\n`;
+              themeSummary += `This theme represents a common thread that connects multiple documents in your collection. Its presence across different sources suggests:\n\n`;
+              themeSummary += `• It's a recurring concept or pattern that emerges independently in different contexts\n`;
+              themeSummary += `• Multiple authors or sources have identified this as a significant topic\n`;
+              themeSummary += `• There may be underlying connections or relationships between these documents\n`;
+              themeSummary += `• This concept serves as a bridge for understanding how different pieces of information relate\n\n`;
+              themeSummary += `The shared nature of this theme makes it particularly valuable for identifying patterns and connections across your document collection.`;
+            } else {
+              themeSummary = `Unique Theme Analysis\n\n`;
+              themeSummary += `The theme "${node.label}" is unique to ${
+                connectedDocuments.length === 1
+                  ? connectedDocuments[0]
+                  : `${connectedDocuments.length} specific document(s)`
+              }.\n\n`;
+              themeSummary += `Why This Theme is Unique:\n`;
+              themeSummary += `This theme appears exclusively in specific document(s), which suggests:\n\n`;
+              themeSummary += `• It represents a specialized concept or topic specific to this source\n`;
+              themeSummary += `• The content contains distinctive information not found elsewhere in your collection\n`;
+              themeSummary += `• This document may offer unique insights or perspectives on this subject\n`;
+              themeSummary += `• The theme helps distinguish this document's specific focus or contribution\n\n`;
+              themeSummary += `Unique themes are valuable for understanding what makes each document distinctive within your collection.`;
+            }
+
+            return {
+              summary: themeSummary,
+              fullContent: "",
+              themes: [],
+              connectedThemes: connectedDocuments.map((doc) => ({
+                theme: "Connected Document",
+                connectedDocs: [doc],
+              })),
+              quotes: topQuotes.map((q) => `"${q.text}" — ${q.source}`),
+              relatedThemes: relatedThemes,
+              doc: null,
+              isThemeNode: true,
+              connectedDocuments: connectedDocuments,
+            };
+          }
+
           // Find the original document
           const doc = documents.find(
             (d) =>
@@ -1873,12 +2316,50 @@
             );
           }
 
+          // Collect key theme child nodes if this is a document
+          let keyThemes = [];
+          if (node.type === "DOCUMENT" && graphData && graphData.links) {
+            const themeNodes = [];
+
+            graphData.links.forEach((link) => {
+              const connectedNodeId =
+                link.source === node.id ? link.target : link.source;
+              const connectedNode = graphData.nodes.find(
+                (n) => n.id === connectedNodeId
+              );
+
+              if (
+                connectedNode &&
+                (connectedNode.type === "THEME" ||
+                  connectedNode.type === "SHARED_THEME")
+              ) {
+                themeNodes.push({
+                  label: connectedNode.label,
+                  type: connectedNode.type,
+                  sharedBy: connectedNode.metadata?.sharedBy?.length || 0,
+                });
+              }
+            });
+
+            // Sort by type (shared themes first) and then by number of connections
+            themeNodes.sort((a, b) => {
+              if (a.type === "SHARED_THEME" && b.type !== "SHARED_THEME")
+                return -1;
+              if (a.type !== "SHARED_THEME" && b.type === "SHARED_THEME")
+                return 1;
+              return b.sharedBy - a.sharedBy;
+            });
+
+            keyThemes = themeNodes.slice(0, 8); // Limit to top 8 themes
+          }
+
           const result = {
             summary,
             fullContent,
             themes,
             connectedThemes: connectedThemes.slice(0, 5), // Limit to 5 connections
             quotes: quotes.slice(0, 3), // Limit to 3 quotes
+            keyThemes: keyThemes, // Add key themes for documents
             doc,
           };
 
@@ -1899,11 +2380,282 @@
           if (!chatInput.trim() || !analyzerRef.current) return;
 
           const userMessage = chatInput.trim();
+          const lowerMessage = userMessage.toLowerCase();
           setChatInput("");
+
+          // Check for graph control commands
+          let commandHandled = false;
+          let commandResponse = "";
+
+          // Label control commands
+          if (lowerMessage.includes("turn off label") || 
+              lowerMessage.includes("hide label") ||
+              lowerMessage.includes("remove label")) {
+            setShowLabels(false);
+            commandResponse = "✓ Document labels hidden.";
+            commandHandled = true;
+          } else if (lowerMessage.includes("turn on label") || 
+                     lowerMessage.includes("show label") ||
+                     lowerMessage.includes("display label")) {
+            setShowLabels(true);
+            commandResponse = "✓ Document labels shown.";
+            commandHandled = true;
+          }
+          // Node filter commands
+          else if (lowerMessage.includes("highlight only document") || 
+                   lowerMessage.includes("show only document")) {
+            setFilters({
+              showDocuments: true,
+              showSharedThemes: false,
+              showUniqueThemes: false,
+            });
+            commandResponse = "✓ Showing only document nodes.";
+            commandHandled = true;
+          } else if (lowerMessage.includes("highlight connection") || 
+                     lowerMessage.includes("show connection")) {
+            setFilters({
+              showDocuments: true,
+              showSharedThemes: true,
+              showUniqueThemes: true,
+            });
+            commandResponse = "✓ Showing all nodes and connections.";
+            commandHandled = true;
+          } else if (lowerMessage.includes("show shared theme") || 
+                     lowerMessage.includes("highlight shared theme")) {
+            setFilters({
+              showDocuments: true,
+              showSharedThemes: true,
+              showUniqueThemes: false,
+            });
+            commandResponse = "✓ Showing documents and shared themes.";
+            commandHandled = true;
+          } else if (lowerMessage.includes("show unique theme") || 
+                     lowerMessage.includes("highlight unique theme")) {
+            setFilters({
+              showDocuments: true,
+              showSharedThemes: false,
+              showUniqueThemes: true,
+            });
+            commandResponse = "✓ Showing documents and unique themes.";
+            commandHandled = true;
+          } else if (lowerMessage.includes("show all") || 
+                     lowerMessage.includes("reset filter") ||
+                     lowerMessage.includes("show everything")) {
+            setFilters({
+              showDocuments: true,
+              showSharedThemes: true,
+              showUniqueThemes: true,
+            });
+            setShowLabels(true);
+            commandResponse = "✓ Showing all nodes with labels.";
+            commandHandled = true;
+          }
+
+          // If a command was handled, respond immediately without calling the API
+          if (commandHandled) {
+            setChatHistory((prev) => [
+              ...prev,
+              { role: "user", content: userMessage },
+              { role: "assistant", content: commandResponse },
+            ]);
+            return;
+          }
+
+          // Check for content-based highlighting queries
+          const isHighlightQuery = 
+            (lowerMessage.includes("which document") || 
+             lowerMessage.includes("what document") ||
+             lowerMessage.includes("highlight document")) &&
+            (lowerMessage.includes("about") || 
+             lowerMessage.includes("mention") ||
+             lowerMessage.includes("talk") ||
+             lowerMessage.includes("discuss") ||
+             lowerMessage.includes("contain"));
+
+          if (isHighlightQuery && documents.length > 0) {
+            // Add user message and thinking indicator
+            setChatHistory((prev) => [
+              ...prev,
+              { role: "user", content: userMessage },
+              { role: "assistant", content: "Analyzing documents...", isThinking: true },
+            ]);
+            setLoading(true);
+
+            try {
+              // Create a focused prompt to identify relevant documents
+              const documentList = documents.map((doc, idx) => 
+                `${idx + 1}. "${doc.title}" (ID: ${doc.filename})\nContent: ${doc.content.slice(0, 800)}...`
+              ).join("\n\n");
+
+              const highlightPrompt = `Based on this user query: "${userMessage}"
+
+Here are the available documents with their EXACT titles:
+${documentList}
+
+Analyze which document(s) are most relevant to the user's query. 
+
+IMPORTANT: Use the EXACT title text as shown above (the text in quotes after the number).
+
+Return ONLY a JSON object with this exact format:
+{
+  "documentTitles": ["exact title 1", "exact title 2"],
+  "explanation": "Brief explanation of why these documents match"
+}
+
+If no documents match, return empty array for documentTitles.
+
+Example response format:
+{"documentTitles": ["Marine_Biodiversity_and_Coral_Reef_Fish", "sustainable_fisheries_and_ocean_conservation"], "explanation": "These documents discuss ocean life and marine ecosystems."}`;
+
+              const response = await fetch(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${window.CONFIG.OPENAI_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [
+                      {
+                        role: "system",
+                        content: "You are a document analysis assistant. Return only valid JSON.",
+                      },
+                      { role: "user", content: highlightPrompt },
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 300,
+                  }),
+                }
+              );
+
+              const data = await response.json();
+              if (!response.ok) throw new Error(data.error?.message || "API request failed");
+
+              const aiResponse = data.choices?.[0]?.message?.content || "{}";
+              
+              // Parse JSON response
+              let result;
+              try {
+                result = JSON.parse(aiResponse);
+              } catch (e) {
+                // If JSON parsing fails, try to extract from markdown code blocks
+                const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/) || 
+                                 aiResponse.match(/```\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                  result = JSON.parse(jsonMatch[1]);
+                } else {
+                  throw new Error("Could not parse AI response");
+                }
+              }
+
+              const matchedTitles = result.documentTitles || [];
+              const explanation = result.explanation || "No matching documents found.";
+
+              console.log("AI returned titles:", matchedTitles);
+              console.log("Available nodes:", graphData?.nodes?.map(n => ({type: n.type, label: n.label})));
+
+              // Find matching document nodes and highlight them (with flexible matching)
+              const matchedNodeIds = [];
+              const matchedNodes = [];
+              if (graphData && graphData.nodes) {
+                matchedTitles.forEach(aiTitle => {
+                  const node = graphData.nodes.find(n => {
+                    if (n.type !== "document") return false;
+                    
+                    const nodeLabel = n.label || n.data?.title || "";
+                    const aiTitleNorm = aiTitle.toLowerCase().trim();
+                    const nodeLabelNorm = nodeLabel.toLowerCase().trim();
+                    
+                    // Try exact match, partial match, or if AI title contains node label
+                    return nodeLabelNorm === aiTitleNorm || 
+                           nodeLabelNorm.includes(aiTitleNorm) ||
+                           aiTitleNorm.includes(nodeLabelNorm);
+                  });
+                  
+                  if (node) {
+                    console.log(`Matched "${aiTitle}" to node "${node.label}"`);
+                    matchedNodeIds.push(node.id);
+                    matchedNodes.push(node);
+                  } else {
+                    console.warn(`Could not find node for title: "${aiTitle}"`);
+                  }
+                });
+              }
+              
+              console.log("Matched nodes:", matchedNodes.length);
+
+              // Apply highlighting
+              setHighlightedNodeIds(matchedNodeIds);
+
+              // If exactly one document found, zoom into it
+              if (matchedNodes.length === 1) {
+                focusOnNode(matchedNodes[0]);
+                setSelectedNode(matchedNodes[0]);
+                setShouldFlashHighlighted(false); // No flashing for single node
+              } else if (matchedNodes.length > 1) {
+                // Enable flashing for multiple documents
+                setShouldFlashHighlighted(true);
+              }
+
+              // Create response message
+              let responseMessage = explanation;
+              if (matchedNodeIds.length > 0) {
+                responseMessage += `\n\n✓ Highlighted ${matchedNodeIds.length} document(s) in the graph.`;
+                if (matchedNodes.length === 1) {
+                  responseMessage += `\n\n🔍 Zoomed into "${matchedNodes[0].label}".`;
+                }
+                responseMessage += `\n\n💡 Click "Show All" or ask me to "reset highlighting" to restore the normal view.`;
+              } else {
+                responseMessage += "\n\nNo documents were highlighted.";
+              }
+
+              setChatHistory((prev) => {
+                const filteredHistory = prev.filter((msg) => !msg.isThinking);
+                const newHistory = [
+                  ...filteredHistory,
+                  { role: "assistant", content: responseMessage },
+                ];
+                setTypingMessageIndex(newHistory.length - 1);
+                return newHistory;
+              });
+
+            } catch (error) {
+              console.error("Highlight query error:", error);
+              setChatHistory((prev) => {
+                const filteredHistory = prev.filter((msg) => !msg.isThinking);
+                return [
+                  ...filteredHistory,
+                  {
+                    role: "assistant",
+                    content: `Error analyzing documents: ${error.message}`,
+                  },
+                ];
+              });
+            } finally {
+              setLoading(false);
+            }
+            return;
+          }
+
+          // Reset highlighting command
+          if (lowerMessage.includes("reset highlight") || 
+              lowerMessage.includes("clear highlight") ||
+              lowerMessage.includes("remove highlight")) {
+            setHighlightedNodeIds([]);
+            setChatHistory((prev) => [
+              ...prev,
+              { role: "user", content: userMessage },
+              { role: "assistant", content: "✓ Highlighting cleared. All nodes restored to normal view." },
+            ]);
+            return;
+          }
 
           setChatHistory((prev) => [
             ...prev,
             { role: "user", content: userMessage },
+            { role: "assistant", content: "Thinking...", isThinking: true },
           ]);
           setLoading(true);
 
@@ -2047,8 +2799,10 @@ Answer the question thoroughly but efficiently.`;
               "I apologize, but I could not generate a response.";
 
             setChatHistory((prev) => {
+              // Remove the "Thinking..." message and add the real response
+              const filteredHistory = prev.filter((msg) => !msg.isThinking);
               const newHistory = [
-                ...prev,
+                ...filteredHistory,
                 { role: "assistant", content: assistantMessage },
               ];
               // Trigger typing animation for the new message
@@ -2057,13 +2811,17 @@ Answer the question thoroughly but efficiently.`;
             });
           } catch (error) {
             console.error("Chat error:", error);
-            setChatHistory((prev) => [
-              ...prev,
-              {
-                role: "assistant",
-                content: `Error: ${error.message}. Please check your API key and try again.`,
-              },
-            ]);
+            setChatHistory((prev) => {
+              // Remove the "Thinking..." message and add error
+              const filteredHistory = prev.filter((msg) => !msg.isThinking);
+              return [
+                ...filteredHistory,
+                {
+                  role: "assistant",
+                  content: `Error: ${error.message}. Please check your API key and try again.`,
+                },
+              ];
+            });
           } finally {
             setLoading(false);
           }
@@ -2145,6 +2903,27 @@ Answer the question thoroughly but efficiently.`;
 
           // Clear selected node
           setSelectedNode(null);
+          
+          // Clear highlighted nodes (undim all nodes)
+          setHighlightedNodeIds([]);
+          
+          // Stop any flashing animation
+          setShouldFlashHighlighted(false);
+          
+          // Restore all nodes to full visibility if they were dimmed
+          if (nodeObjectsRef.current) {
+            Object.values(nodeObjectsRef.current).forEach((mesh) => {
+              mesh.material.opacity = 1.0;
+              mesh.material.transparent = false;
+              const nodeData = mesh.userData.nodeData;
+              if (nodeData) {
+                const originalColor = new THREE.Color(nodeData.color || "#60a5fa");
+                mesh.material.color.copy(originalColor);
+                mesh.material.emissive.copy(originalColor);
+                mesh.material.emissiveIntensity = 0.3;
+              }
+            });
+          }
 
           const startPos = cameraRef.current.position.clone();
           const endPos = new THREE.Vector3(0, 0, 80); // Match initial camera position
@@ -2243,6 +3022,71 @@ Answer the question thoroughly but efficiently.`;
                 </div>
 
                 <div className="sidebar-section">
+                  <h3>Display Options</h3>
+                  <div className="filter-checkbox-group">
+                    <div className="filter-checkbox-item">
+                      <input
+                        type="checkbox"
+                        id="filter-documents"
+                        checked={filters.showDocuments}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            showDocuments: e.target.checked,
+                          }))
+                        }
+                      />
+                      <label htmlFor="filter-documents">
+                        📄 Document Nodes
+                      </label>
+                    </div>
+                    <div className="filter-checkbox-item">
+                      <input
+                        type="checkbox"
+                        id="filter-shared-themes"
+                        checked={filters.showSharedThemes}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            showSharedThemes: e.target.checked,
+                          }))
+                        }
+                      />
+                      <label htmlFor="filter-shared-themes">
+                        🔗 Shared Themes
+                      </label>
+                    </div>
+                    <div className="filter-checkbox-item">
+                      <input
+                        type="checkbox"
+                        id="filter-unique-themes"
+                        checked={filters.showUniqueThemes}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            showUniqueThemes: e.target.checked,
+                          }))
+                        }
+                      />
+                      <label htmlFor="filter-unique-themes">
+                        ⭐ Unique Themes
+                      </label>
+                    </div>
+                    <div className="filter-checkbox-item">
+                      <input
+                        type="checkbox"
+                        id="toggle-labels"
+                        checked={showLabels}
+                        onChange={(e) => setShowLabels(e.target.checked)}
+                      />
+                      <label htmlFor="toggle-labels">
+                        🏷️ Document Labels
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sidebar-section">
                   <h3>Graph Controls</h3>
                   <div
                     style={{
@@ -2320,9 +3164,7 @@ Answer the question thoroughly but efficiently.`;
                 <div
                   ref={chatOverlayRef}
                   className={`chat-overlay ${
-                    chatExpanded
-                      ? "chat-overlay-expanded"
-                      : "chat-overlay-collapsed"
+                    chatExpanded ? "chat-overlay-expanded" : ""
                   } ${!sidebarVisible ? "chat-overlay-centered" : ""}`}
                 >
                   <div className="chat-header">
@@ -2342,7 +3184,7 @@ Answer the question thoroughly but efficiently.`;
                   </div>
 
                   {chatExpanded && chatHistory.length > 0 && (
-                    <div className="chat-messages">
+                    <div ref={chatMessagesRef} className="chat-messages">
                       {chatHistory.map((msg, idx) => {
                         const isTyping = typingMessageIndex === idx;
                         const textToShow = isTyping
@@ -2396,11 +3238,42 @@ Answer the question thoroughly but efficiently.`;
                                 </div>
                               </>
                             )}
+                            {details.keyThemes &&
+                              details.keyThemes.length > 0 && (
+                                <>
+                                  <span className="section-label">
+                                    Key Themes
+                                  </span>
+                                  <ul className="themes-list">
+                                    {details.keyThemes.map((theme, idx) => (
+                                      <li key={idx}>
+                                        <strong>{theme.label}</strong>
+                                        {theme.type === "SHARED_THEME" &&
+                                          theme.sharedBy > 1 && (
+                                            <span
+                                              style={{
+                                                fontSize: "0.75rem",
+                                                color: "#9ca3af",
+                                                marginLeft: "0.5rem",
+                                              }}
+                                            >
+                                              (shared with {theme.sharedBy - 1}{" "}
+                                              other
+                                              {theme.sharedBy > 2 ? "s" : ""})
+                                            </span>
+                                          )}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </>
+                              )}
                             {details.connectedThemes &&
                               details.connectedThemes.length > 0 && (
                                 <>
                                   <span className="section-label">
-                                    Connected Themes
+                                    {details.isThemeNode
+                                      ? "Connected Documents"
+                                      : "Connected Themes"}
                                   </span>
                                   <ul className="connected-themes-list">
                                     {details.connectedThemes.map(
@@ -2414,6 +3287,35 @@ Answer the question thoroughly but efficiently.`;
                                               )})`}
                                           </span>
                                         </li>
+                                      )
+                                    )}
+                                  </ul>
+                                </>
+                              )}
+                            {details.relatedThemes &&
+                              details.relatedThemes.length > 0 && (
+                                <>
+                                  <span className="section-label">
+                                    Related Themes
+                                  </span>
+                                  <ul className="themes-list">
+                                    {details.relatedThemes.map((theme, idx) => (
+                                      <li key={idx}>{theme}</li>
+                                    ))}
+                                  </ul>
+                                </>
+                              )}
+                            {details.connectedDocuments &&
+                              details.connectedDocuments.length > 0 &&
+                              !details.connectedThemes && (
+                                <>
+                                  <span className="section-label">
+                                    Appears In
+                                  </span>
+                                  <ul className="themes-list">
+                                    {details.connectedDocuments.map(
+                                      (doc, idx) => (
+                                        <li key={idx}>{doc}</li>
                                       )
                                     )}
                                   </ul>

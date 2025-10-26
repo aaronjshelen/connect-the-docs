@@ -2,6 +2,14 @@
 
 ## 🎯 Priority: High
 
+- Checkbox filtering
+  - ask Chatbot to highlight certain nodes.
+- docx/pdf -> txt file conversion
+- change UI color
+- create DEMO
+- check paths
+  - use Claude API?
+
 ### 1. Adjust LLM Prompt for Better Responses
 
 #### Theme Extraction Improvements

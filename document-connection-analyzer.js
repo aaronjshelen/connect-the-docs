@@ -448,11 +448,21 @@ class DocumentConnectionAnalyzer {
       docThemes.forEach((themeId) => {
         const theme = this.themeStorage.themes.get(themeId);
         if (theme.documents.size === 1) {
-          // Unique to this document
-          const angle = (uniqueThemeIndex / 5) * Math.PI * 2;
-          const radius = 25;
+          // Unique to this document - position radially outward from parent
           const docNode = nodes.find((n) => n.id === docId);
-
+          
+          // Create spherical offset using spherical coordinates
+          const phi = (uniqueThemeIndex / 5) * Math.PI * 2;
+          const theta = Math.PI / 4; // 45 degrees outward
+          const offsetRadius = 15;
+          
+          // Calculate direction vector from origin through document node
+          const docDistance = Math.sqrt(docNode.x ** 2 + docNode.y ** 2 + docNode.z ** 2);
+          const dirX = docNode.x / docDistance;
+          const dirY = docNode.y / docDistance;
+          const dirZ = docNode.z / docDistance;
+          
+          // Position unique theme radially outward from document
           nodes.push({
             id: themeId,
             type: "unique-theme",
@@ -460,9 +470,9 @@ class DocumentConnectionAnalyzer {
             data: theme,
             size: 4 + theme.importance * 3,
             color: this.getNodeColor("unique-theme", theme.category),
-            x: docNode.x + Math.cos(angle) * radius,
-            y: docNode.y + Math.sin(angle) * radius,
-            z: docNode.z - 5,
+            x: docNode.x + dirX * offsetRadius + Math.cos(phi) * 8,
+            y: docNode.y + dirY * offsetRadius + Math.sin(phi) * 8,
+            z: docNode.z + dirZ * offsetRadius,
             metadata: {
               parent: docId,
               category: theme.category,
@@ -558,28 +568,36 @@ class DocumentConnectionAnalyzer {
       sharedThemes: [],
     };
 
-    // Position documents in a circle
+    // Position documents on a sphere using fibonacci spiral
+    const goldenRatio = (1 + Math.sqrt(5)) / 2;
+    const angleIncrement = Math.PI * 2 * goldenRatio;
+    const radius = Math.max(40, docCount * 6);
+
     documentIds.forEach((docId, index) => {
-      const angle = (index / docCount) * Math.PI * 2;
-      const radius = Math.max(30, docCount * 5);
+      const t = index / docCount;
+      const inclination = Math.acos(1 - 2 * t);
+      const azimuth = angleIncrement * index;
 
       positions.documents.push({
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-        z: 0,
+        x: radius * Math.sin(inclination) * Math.cos(azimuth),
+        y: radius * Math.sin(inclination) * Math.sin(azimuth),
+        z: radius * Math.cos(inclination),
       });
     });
 
-    // Position shared themes in inner circles
+    // Position shared themes on an inner sphere
     const sharedThemes = this.themeStorage.getSharedThemes(2);
+    const innerRadius = Math.max(20, docCount * 3);
+
     sharedThemes.forEach((theme, index) => {
-      const angle = (index / sharedThemes.length) * Math.PI * 2;
-      const radius = Math.max(15, docCount * 2);
+      const t = index / Math.max(sharedThemes.length, 1);
+      const inclination = Math.acos(1 - 2 * t);
+      const azimuth = angleIncrement * index;
 
       positions.sharedThemes.push({
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-        z: 8 + theme.documents.length * 2,
+        x: innerRadius * Math.sin(inclination) * Math.cos(azimuth),
+        y: innerRadius * Math.sin(inclination) * Math.sin(azimuth),
+        z: innerRadius * Math.cos(inclination),
       });
     });
 
